@@ -40,11 +40,13 @@ jobs:
         run: |
           fail=0
           while read -r line; do
-            case "$line" in CONFIG_*) ;; *) continue ;; esac
-            sym=${line%%=*}
-            want=${line#*=}
+            case "$line" in
+              CONFIG_*)          sym=${line%%=*}; want=${line#*=} ;;
+              '# CONFIG_'*' is not set') sym=${line#'# '}; sym=${sym%% *}; want=n ;;
+              *) continue ;;
+            esac
             got=$(grep "^$sym=" zig-out/config | cut -d= -f2)
-            [ -n "$got" ] || got='(dropped)'
+            [ -n "$got" ] || got=n
             if [ "$got" != "$want" ]; then
               echo "FAIL $sym: asked for $want, got $got"
               fail=1
