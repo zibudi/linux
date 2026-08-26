@@ -2,7 +2,16 @@
 # and a gcc, which is exactly what a Mac does not have.
 name: kernel
 
-on: [push, pull_request]
+# A branch with a PR open would otherwise build twice for one commit, and a
+# kernel build is not cheap enough to do that. Superseded runs stop.
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build:
