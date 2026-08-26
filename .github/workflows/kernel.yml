@@ -25,11 +25,30 @@ jobs:
 
       - run: zig build -Dsource=source
 
-      # What we actually want to look at: how many modules the config made,
-      # and whether depmod left us the alias table the loader will read.
       - name: what came out
         run: |
           ls -l zig-out/vmlinuz
-          echo "modules: $(find zig-out/modules -name '*.ko' | wc -l)"
           echo "aliases: $(wc -l < zig-out/modules/modules.alias)"
-          ls zig-out/modules
+          echo "modules: $(find zig-out/modules -name '*.ko' | wc -l)"
+          find zig-out/modules -name '*.ko' | sed 's|.*/||' | sort
+
+      # The claim this whole path exists to make. kconfig silently drops a
+      # symbol whose dependencies are unmet, which would hand us back the
+      # builtin driver we were trying to get rid of -- and the initramfs would
+      # boot anyway, proving nothing.
+      - name: the config we asked for is the config we got
+        run: |
+          fail=0
+          while read -r line; do
+            case "$line" in CONFIG_*) ;; *) continue ;; esac
+            sym=${line%%=*}
+            want=${line#*=}
+            got=$(grep "^$sym=" zig-out/config | cut -d= -f2)
+            [ -n "$got" ] || got='(dropped)'
+            if [ "$got" != "$want" ]; then
+              echo "FAIL $sym: asked for $want, got $got"
+              fail=1
+            fi
+          done < config/x86_64.config
+          [ $fail -eq 0 ] && echo 'every symbol in the fragment survived'
+          exit $fail

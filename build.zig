@@ -122,6 +122,11 @@ const kernel_script =
     \\mkdir -p "$out"
     \\cp arch/x86/boot/bzImage "$out/vmlinuz"
     \\
+    \\# What kconfig actually decided. merge_config drops a symbol whose
+    \\# dependencies are unmet and only says so on a stdout nobody keeps, so
+    \\# the answer has to come out of the build to be checked.
+    \\cp .config "$out/config"
+    \\
     \\# depmod's own layout, kept intact: modules.dep names every module by its
     \\# path under this directory, so flattening the tree would make that file
     \\# a lie. The alpine path flattens instead, and will have to stop.
