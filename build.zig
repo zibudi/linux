@@ -1,26 +1,44 @@
 const std = @import("std");
 
-// Alpine's 6.12.94-0-virt build, borrowed whole. The URL is unversioned --
-// Alpine overwrites it every stable release -- so the digest below is the only
-// thing keeping this reproducible. When it stops matching, that is Alpine
-// moving, not corruption: check what changed, then bump both lines together.
-const url = "https://dl-cdn.alpinelinux.org/alpine/v3.22/releases/x86_64/netboot/vmlinuz-virt";
-const sha256 = "12eb24189f3eb30bd0dcd919248caaa054ed4e87b799a53fdcc3999f157933e4";
+// Alpine's kernel package: one versioned artifact carrying the image and the
+// 920 modules built alongside it, so the two can never disagree about
+// vermagic. The netboot vmlinuz this replaced had no version in its URL.
+const url = "https://dl-cdn.alpinelinux.org/alpine/v3.22/main/x86_64/linux-virt-6.12.103-r0.apk";
+const sha256 = "9f1adbcdc3abc8071257f5e47a59acffe923a0b35fda61d23a2b3f869dd764b3";
 
 pub fn build(b: *std.Build) void {
+    const host = b.graph.host;
+
     const curl = b.addSystemCommand(&.{ "curl", "-fsSL", "-o" });
-    const downloaded = curl.addOutputFileArg("vmlinuz");
+    const downloaded = curl.addOutputFileArg("linux-virt.apk");
     curl.addArg(url);
 
     const verify = b.addSystemCommand(&.{ "sh", "-c", verify_script, "verify", sha256 });
     verify.addFileArg(downloaded);
-    const vmlinuz = verify.addOutputFileArg("vmlinuz");
+    const apk = verify.addOutputFileArg("linux-virt.apk");
 
-    // The whole public surface: consumers ask for "vmlinuz" and never learn
-    // where it came from.
-    b.addNamedLazyPath("vmlinuz", vmlinuz);
+    const libarchive = b.dependency("libarchive", .{ .target = host, .optimize = .ReleaseSafe });
+    const unpack_mod = b.createModule(.{
+        .root_source_file = b.path("tools/unpack.zig"),
+        .target = host,
+        .optimize = .ReleaseSafe,
+    });
+    unpack_mod.linkLibrary(libarchive.artifact("archive"));
+    const unpack = b.addExecutable(.{ .name = "unpack", .root_module = unpack_mod });
 
-    b.getInstallStep().dependOn(&b.addInstallFile(vmlinuz, "vmlinuz").step);
+    const run = b.addRunArtifact(unpack);
+    run.addFileArg(apk);
+    const out = run.addOutputDirectoryArg("linux");
+
+    // The public surface: an image, and the modules that match it.
+    b.addNamedLazyPath("vmlinuz", out.path(b, "vmlinuz"));
+    b.addNamedLazyPath("modules", out.path(b, "modules"));
+
+    b.getInstallStep().dependOn(&b.addInstallDirectory(.{
+        .source_dir = out,
+        .install_dir = .prefix,
+        .install_subdir = ".",
+    }).step);
 }
 
 const verify_script =
@@ -31,7 +49,7 @@ const verify_script =
     \\    actual=$(shasum -a 256 "$2" | cut -d' ' -f1)
     \\fi
     \\if [ "$actual" != "$1" ]; then
-    \\    echo "vmlinuz digest changed" >&2
+    \\    echo "linux-virt.apk digest changed" >&2
     \\    echo "  expected $1" >&2
     \\    echo "  got      $actual" >&2
     \\    exit 1
