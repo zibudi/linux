@@ -1,0 +1,26 @@
+# The from-source build only runs here. It needs a case-sensitive filesystem
+# and a gcc, which is exactly what a Mac does not have.
+name: kernel
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - run: sudo apt-get update && sudo apt-get install -y bc bison flex kmod libelf-dev libssl-dev
+      - uses: mlugg/setup-zig@v2
+        with:
+          version: 0.16.0
+
+      - run: zig build -Dsource=source
+
+      # What we actually want to look at: how many modules the config made,
+      # and whether depmod left us the alias table the loader will read.
+      - name: what came out
+        run: |
+          ls -l zig-out/vmlinuz
+          echo "modules: $(find zig-out/modules -name '*.ko' | wc -l)"
+          echo "aliases: $(wc -l < zig-out/modules/modules.alias)"
+          ls zig-out/modules
