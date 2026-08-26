@@ -1,6 +1,6 @@
 .{
     .name = .linux,
-    .version = "6.12.94",
+    .version = "6.12.103",
     .fingerprint = 0x9211474f2e4aade9,
     .minimum_zig_version = "0.16.0",
     .dependencies = .{
@@ -12,5 +12,6 @@
     .paths = .{
         "build.zig",
         "build.zig.zon",
+        "tools",
     },
 }
