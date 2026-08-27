@@ -26,6 +26,7 @@ pub fn main(init: std.process.Init) !void {
         "-C",
         source,
         O,
+        "ARCH=x86_64",
         "LLVM=1",
         "NM=nm",
         "OBJCOPY=objcopy",
