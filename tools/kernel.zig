@@ -12,7 +12,7 @@ pub fn main(init: std.process.Init) !void {
     const staged = try std.fmt.allocPrint(arena, "{s}/staged", .{out});
     try cwd.createDirPath(io, src);
 
-    try run(io, &.{ "tar", "-xJf", tarball, "-C", src, "--strip-components=1" });
+    try untar(io, arena, tarball, src);
     try run(io, &.{ make, "-C", src, "defconfig" });
 
     const dotconfig = try std.fmt.allocPrint(arena, "{s}/.config", .{src});
@@ -50,6 +50,20 @@ pub fn main(init: std.process.Init) !void {
 
     try cwd.deleteTree(io, src);
     try cwd.deleteTree(io, staged);
+}
+
+fn untar(io: std.Io, arena: std.mem.Allocator, tarball: []const u8, dest: []const u8) !void {
+    const cwd = std.Io.Dir.cwd();
+    const file = try cwd.openFile(io, tarball, .{});
+    var file_reader: std.Io.File.Reader = .init(file, io, try arena.alloc(u8, 1 << 16));
+    defer file_reader.file.close(io);
+
+    var xz: std.compress.xz.Decompress = try .init(&file_reader.interface, arena, try arena.alloc(u8, 1 << 20));
+    defer xz.deinit();
+
+    var dir = try cwd.openDir(io, dest, .{});
+    defer dir.close(io);
+    try std.tar.extract(io, dir, &xz.reader, .{ .strip_components = 1 });
 }
 
 fn run(io: std.Io, argv: []const []const u8) !void {

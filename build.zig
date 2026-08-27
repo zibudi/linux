@@ -34,7 +34,7 @@ fn tool(b: *std.Build, host: std.Build.ResolvedTarget, name: []const u8) *std.Bu
         .root_module = b.createModule(.{
             .root_source_file = b.path(b.fmt("tools/{s}.zig", .{name})),
             .target = host,
-            .optimize = .ReleaseSafe,
+            .optimize = .ReleaseFast,
         }),
     });
 }
