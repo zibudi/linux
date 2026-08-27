@@ -14,8 +14,11 @@ pub fn main(init: std.process.Init) !void {
     const O = try std.fmt.allocPrint(arena, "O={s}", .{tree});
     const jobs = try std.fmt.allocPrint(arena, "-j{d}", .{try std.Thread.getCpuCount()});
 
+    const merge = try std.fmt.allocPrint(arena, "{s}/scripts/kconfig/merge_config.sh", .{source});
+    const config = try std.fmt.allocPrint(arena, "{s}/.config", .{tree});
+
     try run(io, &.{ make, "-C", source, O, "defconfig" });
-    try append(io, arena, try std.fmt.allocPrint(arena, "{s}/.config", .{tree}), fragment);
+    try run(io, &.{ "sh", merge, "-m", "-O", tree, config, fragment });
     try run(io, &.{ make, "-C", source, O, "olddefconfig" });
     try run(io, &.{ make, "-C", source, O, jobs, "bzImage", "modules" });
     try run(io, &.{ make, "-C", source, O, "INSTALL_MOD_PATH=dest", "INSTALL_MOD_STRIP=1", "modules_install" });
@@ -35,14 +38,6 @@ fn run(io: std.Io, argv: []const []const u8) !void {
         .exited => |code| if (code != 0) return error.MakeFailed,
         else => return error.MakeFailed,
     }
-}
-
-fn append(io: std.Io, arena: std.mem.Allocator, path: []const u8, extra: []const u8) !void {
-    const cwd = std.Io.Dir.cwd();
-    try cwd.writeFile(io, .{ .sub_path = path, .data = try std.mem.concat(arena, u8, &.{
-        try cwd.readFileAlloc(io, path, arena, .unlimited),
-        try cwd.readFileAlloc(io, extra, arena, .unlimited),
-    }) });
 }
 
 fn modules(io: std.Io, arena: std.mem.Allocator, tree: []const u8) ![]const u8 {

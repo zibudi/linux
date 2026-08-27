@@ -19,6 +19,11 @@ jobs:
           version: 0.16.0
       - run: sudo apt-get update && sudo apt-get install -y bc bison flex kmod libelf-dev libssl-dev qemu-system-x86
 
+      - name: the only make is the one we build
+        run: |
+          sudo rm -f /usr/bin/make
+          if command -v make; then echo "a make we did not build is still on PATH"; exit 1; fi
+
       - run: zig build
 
       - name: what came out
