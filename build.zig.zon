@@ -5,8 +5,8 @@
     .minimum_zig_version = "0.16.0",
     .dependencies = .{
         .gnumake = .{
-            .url = "git+https://github.com/zibudi/gnumake.git#1eb93e9e37c4f3b6880c28d46d60260fb5384ced",
-            .hash = "gnumake-4.4.1-mm24-5LFAAAxzeX0Uk-JIbAXsF5RG42RZHTTbriCYdDT",
+            .url = "git+https://github.com/zibudi/gnumake.git#cfdcd82479aca93787acdc1b13e21c340c1ba954",
+            .hash = "gnumake-4.4.1-mm24-_nFAAD91MMa42BJPS2SpTeTzDNGKWMSfB3UvXlL",
         },
     },
     .paths = .{
