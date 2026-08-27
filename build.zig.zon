@@ -4,9 +4,9 @@
     .fingerprint = 0x9211474f2e4aade9,
     .minimum_zig_version = "0.16.0",
     .dependencies = .{
-        .libarchive = .{
-            .url = "git+https://github.com/zibudi/libarchive.git#6f90f2ac8054e3423cbc566da0c299b33ff12b91",
-            .hash = "libarchive-3.8.1-cV3jE_JcAADHE8qr0hyq48R7d8EkFpiLVo4vnTEp_Enp",
+        .gnumake = .{
+            .url = "git+https://github.com/zibudi/gnumake.git#1eb93e9e37c4f3b6880c28d46d60260fb5384ced",
+            .hash = "gnumake-4.4.1-mm24-5LFAAAxzeX0Uk-JIbAXsF5RG42RZHTTbriCYdDT",
         },
     },
     .paths = .{
