@@ -1,0 +1,61 @@
+name: kernel
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09
+      - uses: mlugg/setup-zig@d1434d08867e3ee9daa34448df10607b98908d29
+        with:
+          version: 0.16.0
+      - run: sudo apt-get update && sudo apt-get install -y bc bison flex kmod libelf-dev libssl-dev qemu-system-x86
+
+      - name: the only make is the one we build
+        run: |
+          sudo rm -f /usr/bin/make
+          if command -v make; then echo "a make we did not build is still on PATH"; exit 1; fi
+
+      - run: zig build
+
+      - name: what came out
+        run: |
+          ls -l zig-out/vmlinuz
+          echo "aliases: $(wc -l < zig-out/modules/modules.alias)"
+          echo "modules: $(find zig-out/modules -name '*.ko' | wc -l)"
+          find zig-out/modules -name '*.ko' | sed 's|.*/||' | sort
+
+      - name: kconfig kept every symbol we asked for
+        run: |
+          fail=0
+          while read -r line; do
+            case "$line" in
+              CONFIG_*) sym=${line%%=*}; want=${line#*=} ;;
+              '# CONFIG_'*' is not set') sym=${line#'# '}; sym=${sym%% *}; want=n ;;
+              *) continue ;;
+            esac
+            got=$(grep "^$sym=" zig-out/config | cut -d= -f2)
+            [ -n "$got" ] || got=n
+            if [ "$got" != "$want" ]; then
+              echo "FAIL $sym: asked for $want, got $got"
+              fail=1
+            fi
+          done < config/x86_64.config
+          [ $fail -eq 0 ] && echo 'every symbol survived'
+          exit $fail
+
+      - name: it boots
+        run: |
+          qemu-system-x86_64 -kernel zig-out/vmlinuz -nographic -no-reboot \
+            -append 'console=ttyS0 panic=-1' > boot.log 2>&1 || true
+          tail -20 boot.log
+          grep -q 'Linux version 6.12.103' boot.log
+          grep -q 'Kernel panic' boot.log

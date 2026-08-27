@@ -4,14 +4,19 @@
     .fingerprint = 0x9211474f2e4aade9,
     .minimum_zig_version = "0.16.0",
     .dependencies = .{
-        .libarchive = .{
-            .url = "git+https://github.com/zibudi/libarchive.git#6f90f2ac8054e3423cbc566da0c299b33ff12b91",
-            .hash = "libarchive-3.8.1-cV3jE_JcAADHE8qr0hyq48R7d8EkFpiLVo4vnTEp_Enp",
+        .linux_source = .{
+            .url = "https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-6.12.103.tar.xz",
+            .hash = "N-V-__8AACJ2L1iLbTjdHm7rRfLngUCvGJOWXx1Ph-EHabgs",
+        },
+        .gnumake = .{
+            .url = "git+https://github.com/zibudi/gnumake.git#cfdcd82479aca93787acdc1b13e21c340c1ba954",
+            .hash = "gnumake-4.4.1-mm24-_nFAAD91MMa42BJPS2SpTeTzDNGKWMSfB3UvXlL",
         },
     },
     .paths = .{
         "build.zig",
         "build.zig.zon",
+        "config",
         "tools",
     },
 }
