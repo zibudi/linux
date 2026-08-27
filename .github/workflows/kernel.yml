@@ -65,7 +65,7 @@ jobs:
           timeout 180 qemu-system-x86_64 \
             -drive if=pflash,format=raw,readonly=on,file="$code" \
             -drive if=pflash,format=raw,file=vars.fd \
-            -kernel zig-out/vmlinuz -nographic -no-reboot -smp 4 \
+            -kernel zig-out/vmlinuz -nographic -no-reboot -smp 4 -m 1024 \
             -append 'console=ttyS0 panic=-1' > boot.log 2>&1 || true
           tail -40 boot.log
           grep -q 'Linux version 6.12.103' boot.log
