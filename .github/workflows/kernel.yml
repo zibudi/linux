@@ -60,9 +60,9 @@ jobs:
 
       - name: it boots
         run: |
-          qemu-system-x86_64 -kernel zig-out/vmlinuz -nographic -no-reboot \
-            -append 'console=ttyS0 panic=-1' > boot.log 2>&1 || true
-          tail -20 boot.log
+          timeout 120 qemu-system-x86_64 -kernel zig-out/vmlinuz -nographic -no-reboot \
+            -append 'console=ttyS0 earlyprintk=serial,ttyS0 panic=-1' > boot.log 2>&1 || true
+          tail -40 boot.log
           grep -q 'Linux version 6.12.103' boot.log
           grep -q 'clang version 21.1.0' boot.log
           grep -q 'LLD 21.1.0' boot.log
