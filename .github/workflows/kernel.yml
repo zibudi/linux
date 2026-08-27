@@ -19,10 +19,16 @@ jobs:
           version: 0.16.0
       - run: sudo apt-get update && sudo apt-get install -y bc bison flex kmod libelf-dev libssl-dev qemu-system-x86
 
-      - name: the only make is the one we build
+      - name: the only toolchain is the one we build
         run: |
-          sudo rm -f /usr/bin/make
-          if command -v make; then echo "a make we did not build is still on PATH"; exit 1; fi
+          sudo rm -f /usr/bin/make \
+                     /usr/bin/gcc* /usr/bin/cc /usr/bin/g++* /usr/bin/c++ \
+                     /usr/bin/as /usr/bin/ld /usr/bin/ld.bfd /usr/bin/ld.gold \
+                     /usr/bin/x86_64-linux-gnu-gcc* /usr/bin/x86_64-linux-gnu-g++* \
+                     /usr/bin/x86_64-linux-gnu-as /usr/bin/x86_64-linux-gnu-ld*
+          for tool in make gcc cc g++ c++ as ld; do
+            if command -v $tool; then echo "a $tool we did not build is still on PATH"; exit 1; fi
+          done
 
       - run: zig build
 
@@ -58,4 +64,6 @@ jobs:
             -append 'console=ttyS0 panic=-1' > boot.log 2>&1 || true
           tail -20 boot.log
           grep -q 'Linux version 6.12.103' boot.log
+          grep -q 'clang version 21.1.0' boot.log
+          grep -q 'LLD 21.1.0' boot.log
           grep -q 'Kernel panic' boot.log

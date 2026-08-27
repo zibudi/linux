@@ -6,8 +6,19 @@ pub fn build(b: *std.Build) void {
     const source = b.dependency("linux_source", .{});
     const make = b.dependency("gnumake", .{ .target = host, .optimize = .ReleaseFast });
 
+    const options = b.addOptions();
+    options.addOption([]const u8, "zig", b.graph.zig_exe);
+    const shim = tool(b, host, "shim");
+    shim.root_module.addOptions("options", options);
+
+    const bin = b.addWriteFiles();
+    _ = bin.addCopyFile(make.artifact("make").getEmittedBin(), "make");
+    inline for (@import("tools/llvm.zig").tools) |named| {
+        _ = bin.addCopyFile(shim.getEmittedBin(), named[0]);
+    }
+
     const kernel = b.addRunArtifact(tool(b, host, "kernel"));
-    kernel.addArtifactArg(make.artifact("make"));
+    kernel.addDirectoryArg(bin.getDirectory());
     kernel.addDirectoryArg(source.path("."));
     kernel.addFileArg(b.path("config/x86_64.config"));
     const out = kernel.addOutputDirectoryArg("linux");
