@@ -1,19 +1,14 @@
 const std = @import("std");
 
-const url = "https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-6.12.103.tar.xz";
-const sha256 = "f143aaade8877ba5616e788b4482576db28481bcf557ef537f4fcc3938fc3176";
-
 pub fn build(b: *std.Build) void {
     const host = b.graph.host;
 
-    const fetch = b.addRunArtifact(tool(b, host, "fetch"));
-    fetch.addArgs(&.{ url, sha256 });
-    const tarball = fetch.addOutputFileArg("linux.tar.xz");
-
+    const source = b.dependency("linux_source", .{});
     const make = b.dependency("gnumake", .{ .target = host, .optimize = .ReleaseFast });
+
     const kernel = b.addRunArtifact(tool(b, host, "kernel"));
     kernel.addArtifactArg(make.artifact("make"));
-    kernel.addFileArg(tarball);
+    kernel.addDirectoryArg(source.path("."));
     kernel.addFileArg(b.path("config/x86_64.config"));
     const out = kernel.addOutputDirectoryArg("linux");
 
