@@ -1,6 +1,5 @@
 const std = @import("std");
 
-const zig = @import("options").zig;
 const subcommand = std.StaticStringMap([]const u8).initComptime(@import("llvm.zig").tools);
 
 pub fn main(init: std.process.Init) !void {
@@ -9,7 +8,7 @@ pub fn main(init: std.process.Init) !void {
     const tool = subcommand.get(std.fs.path.basename(argv[0])) orelse return error.UnknownTool;
 
     var cc: std.ArrayList([]const u8) = .empty;
-    try cc.appendSlice(arena, &.{ zig, tool });
+    try cc.appendSlice(arena, &.{ "zig", tool });
     if (compiles(tool)) try cc.append(arena, "-fno-sanitize=undefined");
 
     const args = try adapt(arena, argv[1..]);

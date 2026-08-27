@@ -6,10 +6,7 @@ pub fn build(b: *std.Build) void {
     const source = b.dependency("linux_source", .{});
     const make = b.dependency("gnumake", .{ .target = host, .optimize = .ReleaseFast });
 
-    const options = b.addOptions();
-    options.addOption([]const u8, "zig", b.graph.zig_exe);
     const shim = tool(b, host, "shim");
-    shim.root_module.addOptions("options", options);
 
     const bin = b.addWriteFiles();
     _ = bin.addCopyFile(make.artifact("make").getEmittedBin(), "make");
