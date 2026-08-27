@@ -5,12 +5,13 @@ pub fn main(init: std.process.Init) !void {
     const arena = init.arena.allocator();
     const argv = try init.minimal.args.toSlice(arena);
     if (argv.len < 5) return error.Usage;
-    const bin, const source, const fragment, const out = .{ argv[1], argv[2], argv[3], argv[4] };
+    const cwd = std.Io.Dir.cwd();
+    const bin = try cwd.realPathFileAlloc(io, argv[1], arena);
+    const source, const fragment, const out = .{ argv[2], argv[3], argv[4] };
 
     const env = init.environ_map;
     try env.put("PATH", try std.fmt.allocPrint(arena, "{s}:{s}", .{ bin, env.get("PATH") orelse "" }));
 
-    const cwd = std.Io.Dir.cwd();
     const tree = try std.fmt.allocPrint(arena, "{s}/build", .{out});
     try cwd.createDirPath(io, tree);
 
