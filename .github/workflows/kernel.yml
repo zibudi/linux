@@ -17,7 +17,7 @@ jobs:
       - uses: mlugg/setup-zig@d1434d08867e3ee9daa34448df10607b98908d29
         with:
           version: 0.16.0
-      - run: sudo apt-get update && sudo apt-get install -y bc bison flex kmod libelf-dev libssl-dev qemu-system-x86
+      - run: sudo apt-get update && sudo apt-get install -y bc bison flex kmod libelf-dev libssl-dev qemu-system-x86 ovmf
 
       - name: the only toolchain is the one we build
         run: |
@@ -60,10 +60,16 @@ jobs:
 
       - name: it boots
         run: |
-          timeout 120 qemu-system-x86_64 -kernel zig-out/vmlinuz -nographic -no-reboot \
-            -append 'console=ttyS0 earlyprintk=serial,ttyS0 panic=-1' > boot.log 2>&1 || true
+          code=$(ls /usr/share/OVMF/OVMF_CODE*.fd | head -1)
+          cp "$(ls /usr/share/OVMF/OVMF_VARS*.fd | head -1)" vars.fd
+          timeout 180 qemu-system-x86_64 \
+            -drive if=pflash,format=raw,readonly=on,file="$code" \
+            -drive if=pflash,format=raw,file=vars.fd \
+            -kernel zig-out/vmlinuz -nographic -no-reboot -smp 4 \
+            -append 'console=ttyS0 panic=-1' > boot.log 2>&1 || true
           tail -40 boot.log
           grep -q 'Linux version 6.12.103' boot.log
           grep -q 'clang version 21.1.0' boot.log
           grep -q 'LLD 21.1.0' boot.log
+          grep -q 'Brought up 1 node, 4 CPUs' boot.log
           grep -q 'Kernel panic' boot.log

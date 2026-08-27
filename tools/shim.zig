@@ -14,7 +14,7 @@ pub fn main(init: std.process.Init) !void {
     const args = try adapt(arena, argv[1..]);
     if (!has(args, "-S")) return std.process.replace(init.io, .{ .argv = try join(arena, cc.items, args) });
 
-    try preprocess(init.io, try join(arena, cc.items, try deps(arena, args)));
+    try run(init.io, try join(arena, cc.items, try deps(arena, args)));
     return std.process.replace(init.io, .{ .argv = try join(arena, cc.items, try assembly(arena, args)) });
 }
 
@@ -25,7 +25,11 @@ fn adapt(arena: std.mem.Allocator, args: []const []const u8) ![]const []const u8
     var tables: ?bool = null;
 
     for (args) |arg| {
-        if (unmappable(arg)) continue;
+        if (std.mem.eql(u8, arg, "-mtune=generic")) continue;
+        if (std.mem.eql(u8, arg, "-march=i386")) {
+            try out.append(arena, "-mcpu=i386");
+            continue;
+        }
         if (std.mem.startsWith(u8, arg, "--target=")) {
             kernel = true;
             continue;
@@ -59,8 +63,10 @@ fn deps(arena: std.mem.Allocator, args: []const []const u8) ![]const []const u8 
             discard = true;
             continue;
         }
-        try out.append(arena, if (std.mem.eql(u8, arg, "-S")) "-E" else arg);
+        if (std.mem.eql(u8, arg, "-S") or std.mem.eql(u8, arg, "-c")) continue;
+        try out.append(arena, arg);
     }
+    try out.append(arena, "-E");
     return out.items;
 }
 
@@ -73,13 +79,6 @@ fn assembly(arena: std.mem.Allocator, args: []const []const u8) ![]const []const
 
 fn compiles(tool: []const u8) bool {
     return std.mem.eql(u8, tool, "cc") or std.mem.eql(u8, tool, "c++");
-}
-
-fn unmappable(arg: []const u8) bool {
-    for ([_][]const u8{ "-mtune=generic", "-march=i386" }) |flag| {
-        if (std.mem.eql(u8, arg, flag)) return true;
-    }
-    return false;
 }
 
 fn depfile(arg: []const u8) bool {
@@ -98,10 +97,10 @@ fn join(arena: std.mem.Allocator, cc: []const []const u8, args: []const []const 
     return std.mem.concat(arena, []const u8, &.{ cc, args });
 }
 
-fn preprocess(io: std.Io, argv: []const []const u8) !void {
+fn run(io: std.Io, argv: []const []const u8) !void {
     var child = try std.process.spawn(io, .{ .argv = argv, .stdout = .ignore });
     switch (try child.wait(io)) {
-        .exited => |code| if (code != 0) return error.PreprocessFailed,
-        else => return error.PreprocessFailed,
+        .exited => |code| if (code != 0) return error.ShimFailed,
+        else => return error.ShimFailed,
     }
 }
