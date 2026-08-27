@@ -9,8 +9,8 @@
             .hash = "N-V-__8AACJ2L1iLbTjdHm7rRfLngUCvGJOWXx1Ph-EHabgs",
         },
         .gnumake = .{
-            .url = "git+https://github.com/zibudi/gnumake.git#cfdcd82479aca93787acdc1b13e21c340c1ba954",
-            .hash = "gnumake-4.4.1-mm24-_nFAAD91MMa42BJPS2SpTeTzDNGKWMSfB3UvXlL",
+            .url = "git+https://github.com/zibudi/gnumake.git#dcd58ad7be296cf033c4724a8383891d786e69a9",
+            .hash = "gnumake-4.4.1-mm24-wDGAAC8xSYBtk4_3H_-8xadiSAax8Rc0mviI7o3",
         },
     },
     .paths = .{
