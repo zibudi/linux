@@ -34,6 +34,9 @@ jobs:
         run: |
           zig build tools
           ours=$PWD/zig-out/tools
+          # zig's install step does not carry symlinks over, so make busybox's
+          # names here, the same way installing busybox anywhere else does.
+          for applet in $("$ours/busybox" --list); do ln -sf busybox "$ours/$applet"; done
           echo "busybox provides $("$ours/busybox" --list | wc -l) applets"
 
           # make hardcodes /bin/sh, and the kernel's tools/ sub-build wipes MAKEFLAGS,
