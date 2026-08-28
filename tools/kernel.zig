@@ -4,12 +4,13 @@ pub fn main(init: std.process.Init) !void {
     const io = init.io;
     const arena = init.arena.allocator();
     const argv = try init.minimal.args.toSlice(arena);
-    if (argv.len < 6) return error.Usage;
+    if (argv.len < 7) return error.Usage;
 
     const cwd = std.Io.Dir.cwd();
     const bin = try cwd.realPathFileAlloc(io, argv[1], arena);
     const applets = try cwd.realPathFileAlloc(io, argv[2], arena);
-    const source, const fragment, const out = .{ argv[3], argv[4], argv[5] };
+    const libs = try cwd.realPathFileAlloc(io, argv[3], arena);
+    const source, const fragment, const out = .{ argv[4], argv[5], argv[6] };
 
     const tree = try std.fmt.allocPrint(arena, "{s}/build", .{out});
     try cwd.createDirPath(io, tree);
@@ -20,6 +21,11 @@ pub fn main(init: std.process.Init) !void {
 
     const env = init.environ_map;
     try env.put("PATH", try std.fmt.allocPrint(arena, "{s}:{s}:{s}", .{ bin, applets, env.get("PATH") orelse "" }));
+
+    // The environment, not the command line, because the kernel's tools/ sub-build
+    // replaces MAKEFLAGS and a command-line variable would not reach objtool.
+    try env.put("HOSTCFLAGS", try std.fmt.allocPrint(arena, "-I{s}/include", .{libs}));
+    try env.put("HOSTLDFLAGS", try std.fmt.allocPrint(arena, "-L{s}/lib", .{libs}));
 
     const make = [_][]const u8{
         try std.fmt.allocPrint(arena, "{s}/make", .{bin}),

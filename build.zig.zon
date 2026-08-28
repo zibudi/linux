@@ -32,6 +32,14 @@
             .url = "git+https://github.com/zibudi/m4.git#696845bf7d679b118640b5d0623f1bf264e41d49",
             .hash = "m4-1.4.0-vx36M3dgAwCPnZvDYWChsq1GIls4mos8dcp6mgOF3U8x",
         },
+        .elfutils = .{
+            .url = "git+https://github.com/zibudi/elfutils.git#bb3f6816e9873507c57b2557acebb97431371129",
+            .hash = "elfutils-0.192.0-lx7CHAz-AQC4Ui-V92Uq_mc7BGL6mLQwnP65Y57JXtb2",
+        },
+        .openssl = .{
+            .url = "git+https://github.com/zibudi/openssl.git#6b318b447c8ff7529e3a2337a1df2a9b4816fee2",
+            .hash = "openssl-3.3.2-TC9C3Ze3ZABaKR5hc8KRnRPhTClKrKQKqTnXTUYkvmSR",
+        },
     },
     .paths = .{
         "build.zig",

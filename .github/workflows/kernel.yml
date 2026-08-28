@@ -17,7 +17,7 @@ jobs:
       - uses: mlugg/setup-zig@d1434d08867e3ee9daa34448df10607b98908d29
         with:
           version: 0.16.0
-      - run: sudo apt-get update && sudo apt-get install -y kmod libelf-dev libssl-dev qemu-system-x86
+      - run: sudo apt-get update && sudo apt-get install -y qemu-system-x86
 
       - name: our OID generator matches the perl it replaces
         run: |

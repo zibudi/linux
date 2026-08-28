@@ -35,6 +35,20 @@ pub fn build(b: *std.Build) void {
     link.addArtifactArg(busybox.artifact("busybox"));
     const applets = link.addOutputDirectoryArg("applets");
 
+    // objtool links libelf and certs/extract-cert links libcrypto. They are
+    // libraries rather than programs, which is why scrubbing PATH never caught them.
+    const elfutils = b.dependency("elfutils", .{ .target = host, .optimize = .ReleaseFast });
+    const openssl = b.dependency("openssl", .{ .target = host, .optimize = .ReleaseFast });
+
+    const libs = b.addWriteFiles();
+    _ = libs.addCopyFile(elfutils.artifact("elf").getEmittedBin(), "lib/libelf.a");
+    _ = libs.addCopyFile(elfutils.artifact("dw").getEmittedBin(), "lib/libdw.a");
+    // Upstream ships crypto and ssl separately; this port merges them, and
+    // -lcrypto is the name the kernel asks for.
+    _ = libs.addCopyFile(openssl.artifact("openssl").getEmittedBin(), "lib/libcrypto.a");
+    _ = libs.addCopyDirectory(elfutils.artifact("elf").getEmittedIncludeTree(), "include", .{});
+    _ = libs.addCopyDirectory(openssl.artifact("openssl").getEmittedIncludeTree(), "include", .{});
+
     const tools = b.step("tools", "build every tool the kernel build runs");
     for ([_]std.Build.LazyPath{ bin.getDirectory(), applets }) |directory| {
         tools.dependOn(&b.addInstallDirectory(.{
@@ -47,6 +61,7 @@ pub fn build(b: *std.Build) void {
     const kernel = b.addRunArtifact(tool(b, host, "kernel"));
     kernel.addDirectoryArg(bin.getDirectory());
     kernel.addDirectoryArg(applets);
+    kernel.addDirectoryArg(libs.getDirectory());
     kernel.addDirectoryArg(source.path("."));
     kernel.addFileArg(b.path("config/x86_64.config"));
     const out = kernel.addOutputDirectoryArg("linux");
