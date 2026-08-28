@@ -49,6 +49,7 @@ pub fn build(b: *std.Build) void {
 
     const libs = b.addWriteFiles();
     _ = libs.addCopyFile(elfutils.artifact("elf").getEmittedBin(), "lib/libelf.a");
+    _ = libs.addCopyFile(elfutils.artifact("eu").getEmittedBin(), "lib/libeu.a");
     _ = libs.addCopyFile(zlib.artifact("z").getEmittedBin(), "lib/libz.a");
     // Upstream ships crypto and ssl separately; this port merges them, and
     // -lcrypto is the name the kernel asks for.

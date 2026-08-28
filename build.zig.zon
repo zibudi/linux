@@ -33,8 +33,8 @@
             .hash = "m4-1.4.0-vx36M3dgAwCPnZvDYWChsq1GIls4mos8dcp6mgOF3U8x",
         },
         .elfutils = .{
-            .url = "git+https://github.com/zibudi/elfutils.git#08f4b8f745ecdb05b48b141c44652dbe66712b8d",
-            .hash = "elfutils-0.192.0-lx7CHJj-AQDknLlKMKE1WLgZtWAS7T27aMRTon4hrGuJ",
+            .url = "git+https://github.com/zibudi/elfutils.git#3f9ded9f84f552097676c5b1c9acc41c635d7734",
+            .hash = "elfutils-0.192.0-lx7CHDT_AQBFpwXcIBW17eo-S_OW1LRTt-kQd0ycOmPf",
         },
         .openssl = .{
             .url = "git+https://github.com/zibudi/openssl.git#6b318b447c8ff7529e3a2337a1df2a9b4816fee2",

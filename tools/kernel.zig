@@ -27,7 +27,7 @@ pub fn main(init: std.process.Init) !void {
     try env.put("HOSTCFLAGS", try std.fmt.allocPrint(arena, "-I{s}/include", .{libs}));
     // objtool puts HOSTLDFLAGS after -lelf, which is where libelf's own
     // dependency on zlib has to be resolved.
-    try env.put("HOSTLDFLAGS", try std.fmt.allocPrint(arena, "-L{s}/lib -lz", .{libs}));
+    try env.put("HOSTLDFLAGS", try std.fmt.allocPrint(arena, "-L{s}/lib -leu -lz", .{libs}));
 
     const make = [_][]const u8{
         try std.fmt.allocPrint(arena, "{s}/make", .{bin}),
