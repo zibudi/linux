@@ -45,8 +45,8 @@
             .hash = "zlib-1.3.2-ZZQ7lc8NAAAHm9MDfplvwoesXvk4tVm6VCsiI8KnIbT0",
         },
         .perl = .{
-            .url = "git+https://github.com/zibudi/perl.git#eea21080a242f342af76191bae0b26855a6fff99",
-            .hash = "perl-5.40.2-poWY0PYWAAAZ_9G-lNqqXI9KDMgFvhJLGO8iS18qavRD",
+            .url = "git+https://github.com/zibudi/perl.git#54212877940592338ffcf35bdcab712a12d8d181",
+            .hash = "perl-5.40.2-poWY0PYWAADA-OfpOozgLbW02lUlmHyu2km3q_6sp0u7",
         },
     },
     .paths = .{
