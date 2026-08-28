@@ -37,12 +37,19 @@ pub fn build(b: *std.Build) void {
 
     // objtool links libelf and certs/extract-cert links libcrypto. They are
     // libraries rather than programs, which is why scrubbing PATH never caught them.
-    const elfutils = b.dependency("elfutils", .{ .target = host, .optimize = .ReleaseFast });
+    // Without zlib and zstd, libelf cannot read compressed sections. The kernel
+    // is built CONFIG_DEBUG_INFO_NONE, so it has none, and objtool links libelf
+    // as a bare archive with no way to pull a compression library in after it.
+    const elfutils = b.dependency("elfutils", .{
+        .target = host,
+        .optimize = .ReleaseFast,
+        .zlib = false,
+        .zstd = false,
+    });
     const openssl = b.dependency("openssl", .{ .target = host, .optimize = .ReleaseFast });
 
     const libs = b.addWriteFiles();
     _ = libs.addCopyFile(elfutils.artifact("elf").getEmittedBin(), "lib/libelf.a");
-    _ = libs.addCopyFile(elfutils.artifact("dw").getEmittedBin(), "lib/libdw.a");
     // Upstream ships crypto and ssl separately; this port merges them, and
     // -lcrypto is the name the kernel asks for.
     _ = libs.addCopyFile(openssl.artifact("openssl").getEmittedBin(), "lib/libcrypto.a");
