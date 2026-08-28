@@ -36,16 +36,7 @@ pub fn build(b: *std.Build) void {
     link.addArtifactArg(busybox.artifact("busybox"));
     const applets = link.addOutputDirectoryArg("applets");
 
-    // Configure and make, run against the toolbox above. Not part of the tools
-    // step: nothing else needs perl, and building it last means it is built
-    // against a machine already stripped of everything we did not make.
-    const build_perl = b.addRunArtifact(tool(b, host, "perl"));
-    build_perl.addDirectoryArg(bin.getDirectory());
-    build_perl.addDirectoryArg(applets);
-    build_perl.addDirectoryArg(b.dependency("perl_source", .{}).path("."));
-    build_perl.addArg(b.graph.zig_exe);
-    const perl = build_perl.addOutputDirectoryArg("perl");
-
+    const perl = b.dependency("perl", .{}).namedLazyPath("perl");
     b.step("perl", "build the perl kbuild runs").dependOn(&b.addInstallDirectory(.{
         .source_dir = perl,
         .install_dir = .prefix,

@@ -8,10 +8,6 @@
             .url = "https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-6.12.103.tar.xz",
             .hash = "N-V-__8AACJ2L1iLbTjdHm7rRfLngUCvGJOWXx1Ph-EHabgs",
         },
-        .perl_source = .{
-            .url = "https://www.cpan.org/src/5.0/perl-5.40.2.tar.gz",
-            .hash = "N-V-__8AALEUlAWG_ZvkC39nJRwTrrHAYXdZuDYiEFlxqHgF",
-        },
         .gnumake = .{
             .url = "git+https://github.com/zibudi/gnumake.git#dcd58ad7be296cf033c4724a8383891d786e69a9",
             .hash = "gnumake-4.4.1-mm24-wDGAAC8xSYBtk4_3H_-8xadiSAax8Rc0mviI7o3",
@@ -47,6 +43,10 @@
         .zlib = .{
             .url = "git+https://github.com/zibudi/zlib.git#d3b5519d3b73616a6bfece0712f080029d2a9244",
             .hash = "zlib-1.3.2-ZZQ7lc8NAAAHm9MDfplvwoesXvk4tVm6VCsiI8KnIbT0",
+        },
+        .perl = .{
+            .url = "git+https://github.com/zibudi/perl.git#f347eebd40eb93c1db8b0b6c516f25a6f87ca713",
+            .hash = "perl-5.40.2-poWY0PYWAADu_-Hb3AdHrHSg0Ob9q4ecNe-v8Bqj38PJ",
         },
     },
     .paths = .{
