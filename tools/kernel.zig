@@ -5,23 +5,41 @@ pub fn main(init: std.process.Init) !void {
     const arena = init.arena.allocator();
     const argv = try init.minimal.args.toSlice(arena);
     if (argv.len < 5) return error.Usage;
-    const make, const source, const fragment, const out = .{ argv[1], argv[2], argv[3], argv[4] };
 
     const cwd = std.Io.Dir.cwd();
+    const bin = try cwd.realPathFileAlloc(io, argv[1], arena);
+    const source, const fragment, const out = .{ argv[2], argv[3], argv[4] };
+
     const tree = try std.fmt.allocPrint(arena, "{s}/build", .{out});
     try cwd.createDirPath(io, tree);
 
-    const O = try std.fmt.allocPrint(arena, "O={s}", .{tree});
-    const jobs = try std.fmt.allocPrint(arena, "-j{d}", .{try std.Thread.getCpuCount()});
-
     const merge = try std.fmt.allocPrint(arena, "{s}/scripts/kconfig/merge_config.sh", .{source});
     const config = try std.fmt.allocPrint(arena, "{s}/.config", .{tree});
+    const jobs = try std.fmt.allocPrint(arena, "-j{d}", .{try std.Thread.getCpuCount()});
 
-    try run(io, &.{ make, "-C", source, O, "defconfig" });
-    try run(io, &.{ "sh", merge, "-m", "-O", tree, config, fragment });
-    try run(io, &.{ make, "-C", source, O, "olddefconfig" });
-    try run(io, &.{ make, "-C", source, O, jobs, "bzImage", "modules" });
-    try run(io, &.{ make, "-C", source, O, "INSTALL_MOD_PATH=dest", "INSTALL_MOD_STRIP=1", "modules_install" });
+    var make: std.ArrayList([]const u8) = .empty;
+    try make.appendSlice(arena, &.{
+        try std.fmt.allocPrint(arena, "{s}/make", .{bin}),
+        "-C",
+        source,
+        try std.fmt.allocPrint(arena, "O={s}", .{tree}),
+        try std.fmt.allocPrint(arena, "CC=gcc -B{s}/", .{bin}),
+        try std.fmt.allocPrint(arena, "HOSTCC=gcc -B{s}/", .{bin}),
+    });
+    for (@import("binutils.zig").tools) |name| {
+        const upper = try arena.alloc(u8, name.len);
+        try make.append(arena, try std.fmt.allocPrint(arena, "{s}={s}/{s}", .{
+            std.ascii.upperString(upper, name),
+            bin,
+            name,
+        }));
+    }
+
+    try run(io, arena, make.items, &.{"defconfig"});
+    try run(io, arena, &.{"sh"}, &.{ merge, "-m", "-O", tree, config, fragment });
+    try run(io, arena, make.items, &.{"olddefconfig"});
+    try run(io, arena, make.items, &.{ jobs, "bzImage", "modules" });
+    try run(io, arena, make.items, &.{ "INSTALL_MOD_PATH=dest", "INSTALL_MOD_STRIP=1", "modules_install" });
 
     try move(io, arena, tree, "arch/x86/boot/bzImage", out, "vmlinuz");
     try move(io, arena, tree, ".config", out, "config");
@@ -32,7 +50,8 @@ pub fn main(init: std.process.Init) !void {
     try cwd.deleteTree(io, tree);
 }
 
-fn run(io: std.Io, argv: []const []const u8) !void {
+fn run(io: std.Io, arena: std.mem.Allocator, command: []const []const u8, args: []const []const u8) !void {
+    const argv = try std.mem.concat(arena, []const u8, &.{ command, args });
     var child = try std.process.spawn(io, .{ .argv = argv });
     switch (try child.wait(io)) {
         .exited => |code| if (code != 0) return error.MakeFailed,
