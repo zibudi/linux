@@ -17,16 +17,16 @@
             .hash = "binutils-2.45.0-SsZUiN52AwB3xpJJxytJFTGBFHNrK_OuZPR2ffDuidmg",
         },
         .busybox = .{
-            .url = "git+https://github.com/zibudi/busybox.git#19579272ee796974a3f52e06070e7f2d81072d96",
-            .hash = "busybox-1.37.0-ooCU9xvEdADlnefWVssgpwc1hcOBybt8QFXuMfsJZC0x",
+            .url = "git+https://github.com/zibudi/busybox.git#d49f6778808df867d20b645fa8c810db75ca51e1",
+            .hash = "busybox-1.37.0-ooCU9xDEdAAPeZp_BnmudqNdPMaXNnT2vIEZZJ5TAw-N",
         },
         .flex = .{
             .url = "git+https://github.com/zibudi/flex.git#abf962cf59194b6b5cdf0994d064684c657333b5",
             .hash = "flex-2.6.4-aOcAuWUNAAB-_m10yFOYBH8l3bzlLHr_P5krLGuYMD_O",
         },
         .byacc = .{
-            .url = "git+https://github.com/zibudi/byacc.git#c96639f73d04e3605b1ee965433256600187313a",
-            .hash = "byacc-2.0.20241231-XpQLb8IMAADU3CPy0J_kxb7At3sW5bD0PGL0-ss-zMCw",
+            .url = "git+https://github.com/zibudi/byacc.git#03ddcfa72b530136514be7d714acbdb9cd5ccf02",
+            .hash = "byacc-2.0.20241231-XpQLb9A0BAAeaWnEun3cRjbx0_b2sVAodLk5JUBKpuMy",
         },
         .m4 = .{
             .url = "git+https://github.com/zibudi/m4.git#696845bf7d679b118640b5d0623f1bf264e41d49",
