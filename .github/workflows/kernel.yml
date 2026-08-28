@@ -19,16 +19,14 @@ jobs:
           version: 0.16.0
       - run: sudo apt-get update && sudo apt-get install -y qemu-system-x86
 
-      - name: our OID generator matches the perl it replaces
+      - name: what the distribution's perl makes of the OID registry
         run: |
           zig build --fetch
-          zig build oid
           script=$(ls zig-pkg/*/lib/build_OID_registry | head -1)
           src=${script%/lib/build_OID_registry}
-          srctree=$src perl "$src/lib/build_OID_registry" "$src/include/linux/oid_registry.h" /tmp/perl.c
-          srctree=$src ./zig-out/bin/oid "$src/lib/build_OID_registry" "$src/include/linux/oid_registry.h" /tmp/ours.c
-          diff /tmp/perl.c /tmp/ours.c
-          echo "identical, $(wc -l < /tmp/ours.c) lines"
+          echo "$src" > /tmp/kernel-src
+          srctree=$src perl "$src/lib/build_OID_registry" "$src/include/linux/oid_registry.h" /tmp/theirs.c
+          perl -e 'print "$^V\n"'
 
       - name: gcc is the only thing here we did not build
         run: |
@@ -72,6 +70,16 @@ jobs:
             esac
           done
           gcc --version | head -1
+
+      - name: the perl we built makes the same of it
+        run: |
+          zig build perl
+          src=$(cat /tmp/kernel-src)
+          ours=$PWD/zig-out/perl/bin/perl
+          "$ours" -e 'print "$^V\n"'
+          srctree=$src "$ours" "$src/lib/build_OID_registry" "$src/include/linux/oid_registry.h" /tmp/ours.c
+          diff /tmp/theirs.c /tmp/ours.c
+          echo "identical, $(wc -l < /tmp/ours.c) lines"
 
       - name: busybox's generated files are what its own scripts write
         run: |

@@ -4,13 +4,14 @@ pub fn main(init: std.process.Init) !void {
     const io = init.io;
     const arena = init.arena.allocator();
     const argv = try init.minimal.args.toSlice(arena);
-    if (argv.len < 7) return error.Usage;
+    if (argv.len < 8) return error.Usage;
 
     const cwd = std.Io.Dir.cwd();
     const bin = try cwd.realPathFileAlloc(io, argv[1], arena);
     const applets = try cwd.realPathFileAlloc(io, argv[2], arena);
-    const libs = try cwd.realPathFileAlloc(io, argv[3], arena);
-    const source, const fragment, const out = .{ argv[4], argv[5], argv[6] };
+    const perl = try cwd.realPathFileAlloc(io, argv[3], arena);
+    const libs = try cwd.realPathFileAlloc(io, argv[4], arena);
+    const source, const fragment, const out = .{ argv[5], argv[6], argv[7] };
 
     const tree = try std.fmt.allocPrint(arena, "{s}/build", .{out});
     try cwd.createDirPath(io, tree);
@@ -20,7 +21,9 @@ pub fn main(init: std.process.Init) !void {
     const jobs = try std.fmt.allocPrint(arena, "-j{d}", .{try std.Thread.getCpuCount()});
 
     const env = init.environ_map;
-    try env.put("PATH", try std.fmt.allocPrint(arena, "{s}:{s}:{s}", .{ bin, applets, env.get("PATH") orelse "" }));
+    // lib/Makefile spells out perl rather than $(PERL), so it has to be found
+    // by name and not only through the variable below.
+    try env.put("PATH", try std.fmt.allocPrint(arena, "{s}:{s}:{s}/bin:{s}", .{ bin, applets, perl, env.get("PATH") orelse "" }));
 
     // The environment, not the command line, because the kernel's tools/ sub-build
     // replaces MAKEFLAGS and a command-line variable would not reach objtool.
@@ -36,7 +39,7 @@ pub fn main(init: std.process.Init) !void {
         try std.fmt.allocPrint(arena, "O={s}", .{tree}),
         try std.fmt.allocPrint(arena, "CC=gcc -B{s}/", .{bin}),
         try std.fmt.allocPrint(arena, "HOSTCC=gcc -B{s}/", .{bin}),
-        try std.fmt.allocPrint(arena, "PERL={s}/perl", .{bin}),
+        try std.fmt.allocPrint(arena, "PERL={s}/bin/perl", .{perl}),
         try std.fmt.allocPrint(arena, "SHELL={s}/sh", .{applets}),
         try std.fmt.allocPrint(arena, "LEX={s}/flex", .{bin}),
         try std.fmt.allocPrint(arena, "YACC={s}/byacc", .{bin}),

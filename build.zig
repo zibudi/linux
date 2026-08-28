@@ -13,23 +13,14 @@ pub fn build(b: *std.Build) void {
         .{ "m4", b.dependency("m4", .{ .target = host, .optimize = .ReleaseFast }) },
     };
 
-    const oid = tool(b, host, "oid");
-
     const bin = b.addWriteFiles();
     _ = bin.addCopyFile(make.artifact("make").getEmittedBin(), "make");
-    // lib/Makefile spells out perl rather than $(PERL), so the stand-in has to
-    // answer to that name. It refuses any script but build_OID_registry.
-    _ = bin.addCopyFile(oid.getEmittedBin(), "perl");
     for (@import("tools/binutils.zig").tools) |name| {
         _ = bin.addCopyFile(binutils.artifact(name).getEmittedBin(), name);
     }
     for (generators) |generator| {
         _ = bin.addCopyFile(generator[1].artifact(generator[0]).getEmittedBin(), generator[0]);
     }
-
-    b.step("oid", "build the OID registry generator on its own").dependOn(
-        &b.addInstallArtifact(oid, .{}).step,
-    );
 
     // busybox dispatches on argv[0], and it is the one that knows which names it
     // answers to. Copied and linked to relatively, so the directory relocates.
@@ -44,6 +35,22 @@ pub fn build(b: *std.Build) void {
     });
     link.addArtifactArg(busybox.artifact("busybox"));
     const applets = link.addOutputDirectoryArg("applets");
+
+    // Configure and make, run against the toolbox above. Not part of the tools
+    // step: nothing else needs perl, and building it last means it is built
+    // against a machine already stripped of everything we did not make.
+    const build_perl = b.addRunArtifact(tool(b, host, "perl"));
+    build_perl.addDirectoryArg(bin.getDirectory());
+    build_perl.addDirectoryArg(applets);
+    build_perl.addDirectoryArg(b.dependency("perl_source", .{}).path("."));
+    build_perl.addArg(b.graph.zig_exe);
+    const perl = build_perl.addOutputDirectoryArg("perl");
+
+    b.step("perl", "build the perl kbuild runs").dependOn(&b.addInstallDirectory(.{
+        .source_dir = perl,
+        .install_dir = .prefix,
+        .install_subdir = "perl",
+    }).step);
 
     // objtool links libelf and certs/extract-cert links libcrypto. They are
     // libraries rather than programs, which is why scrubbing PATH never caught them.
@@ -79,6 +86,7 @@ pub fn build(b: *std.Build) void {
     const kernel = b.addRunArtifact(tool(b, host, "kernel"));
     kernel.addDirectoryArg(bin.getDirectory());
     kernel.addDirectoryArg(applets);
+    kernel.addDirectoryArg(perl);
     kernel.addDirectoryArg(libs.getDirectory());
     kernel.addDirectoryArg(source.path("."));
     kernel.addFileArg(b.path("config/x86_64.config"));

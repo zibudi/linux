@@ -8,6 +8,10 @@
             .url = "https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-6.12.103.tar.xz",
             .hash = "N-V-__8AACJ2L1iLbTjdHm7rRfLngUCvGJOWXx1Ph-EHabgs",
         },
+        .perl_source = .{
+            .url = "https://www.cpan.org/src/5.0/perl-5.40.2.tar.gz",
+            .hash = "N-V-__8AALEUlAWG_ZvkC39nJRwTrrHAYXdZuDYiEFlxqHgF",
+        },
         .gnumake = .{
             .url = "git+https://github.com/zibudi/gnumake.git#dcd58ad7be296cf033c4724a8383891d786e69a9",
             .hash = "gnumake-4.4.1-mm24-wDGAAC8xSYBtk4_3H_-8xadiSAax8Rc0mviI7o3",
@@ -17,8 +21,8 @@
             .hash = "binutils-2.45.0-SsZUiN52AwB3xpJJxytJFTGBFHNrK_OuZPR2ffDuidmg",
         },
         .busybox = .{
-            .url = "git+https://github.com/zibudi/busybox.git#ae2d67b535d10fe75ec7a616d5148360f0705262",
-            .hash = "busybox-1.37.0-ooCU95MhgAC0HzNO3nJ70B8n5IyWalDcbHieciKuxenI",
+            .url = "git+https://github.com/zibudi/busybox.git#ef584dc2d6df9967b4b7a2a11ad930bc11c5a091",
+            .hash = "busybox-1.37.0-ooCU98ykgwDWSi8gStI-uD_z2ea65ZO8c2_B_5CvW2Jg",
         },
         .flex = .{
             .url = "git+https://github.com/zibudi/flex.git#abf962cf59194b6b5cdf0994d064684c657333b5",
