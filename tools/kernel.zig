@@ -25,7 +25,9 @@ pub fn main(init: std.process.Init) !void {
     // The environment, not the command line, because the kernel's tools/ sub-build
     // replaces MAKEFLAGS and a command-line variable would not reach objtool.
     try env.put("HOSTCFLAGS", try std.fmt.allocPrint(arena, "-I{s}/include", .{libs}));
-    try env.put("HOSTLDFLAGS", try std.fmt.allocPrint(arena, "-L{s}/lib", .{libs}));
+    // objtool puts HOSTLDFLAGS after -lelf, which is where libelf's own
+    // dependency on zlib has to be resolved.
+    try env.put("HOSTLDFLAGS", try std.fmt.allocPrint(arena, "-L{s}/lib -lz", .{libs}));
 
     const make = [_][]const u8{
         try std.fmt.allocPrint(arena, "{s}/make", .{bin}),

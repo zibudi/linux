@@ -33,12 +33,16 @@
             .hash = "m4-1.4.0-vx36M3dgAwCPnZvDYWChsq1GIls4mos8dcp6mgOF3U8x",
         },
         .elfutils = .{
-            .url = "git+https://github.com/zibudi/elfutils.git#bb3f6816e9873507c57b2557acebb97431371129",
-            .hash = "elfutils-0.192.0-lx7CHAz-AQC4Ui-V92Uq_mc7BGL6mLQwnP65Y57JXtb2",
+            .url = "git+https://github.com/zibudi/elfutils.git#08f4b8f745ecdb05b48b141c44652dbe66712b8d",
+            .hash = "elfutils-0.192.0-lx7CHJj-AQDknLlKMKE1WLgZtWAS7T27aMRTon4hrGuJ",
         },
         .openssl = .{
             .url = "git+https://github.com/zibudi/openssl.git#6b318b447c8ff7529e3a2337a1df2a9b4816fee2",
             .hash = "openssl-3.3.2-TC9C3Ze3ZABaKR5hc8KRnRPhTClKrKQKqTnXTUYkvmSR",
+        },
+        .zlib = .{
+            .url = "git+https://github.com/zibudi/zlib.git#d3b5519d3b73616a6bfece0712f080029d2a9244",
+            .hash = "zlib-1.3.2-ZZQ7lc8NAAAHm9MDfplvwoesXvk4tVm6VCsiI8KnIbT0",
         },
     },
     .paths = .{
