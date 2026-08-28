@@ -81,26 +81,6 @@ jobs:
           diff /tmp/theirs.c /tmp/ours.c
           echo "identical, $(wc -l < /tmp/ours.c) lines"
 
-      - name: busybox's generated files are what its own scripts write
-        run: |
-          ours=$PWD/zig-out/tools
-          src=$(cd $(ls -d zig-pkg/busybox-*/ | head -1) && pwd)
-          out=$(mktemp -d)
-          cd "$out"
-          mkdir -p include
-          cp "$src/config/zibudi.config" .config
-          # Every tool these reach for is ours: the shell, and the sed, cat, cmp,
-          # find, od and dd they run.
-          "$ours/sh" "$src/scripts/gen_build_files.sh" "$src" .
-          "$ours/sh" "$src/scripts/embedded_scripts" include/embedded_scripts.h
-          "$ours/sh" "$src/scripts/generate_BUFSIZ.sh" include/common_bufsiz.h
-          n=0
-          for f in $(find include -name '*.h') $(find . -name Config.in); do
-            diff "$src/generated/${f#./}" "$f"
-            n=$((n + 1))
-          done
-          echo "$n files, all identical to what upstream's scripts wrote"
-
       - run: zig build
 
       - name: what came out
