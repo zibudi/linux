@@ -16,6 +16,10 @@
             .url = "git+https://github.com/zibudi/binutils.git#dcd0e3e074d3ff4ca765eaaf14abf2dcf2f1da9f",
             .hash = "binutils-2.45.0-SsZUiN52AwB3xpJJxytJFTGBFHNrK_OuZPR2ffDuidmg",
         },
+        .busybox = .{
+            .url = "git+https://github.com/zibudi/busybox.git#19579272ee796974a3f52e06070e7f2d81072d96",
+            .hash = "busybox-1.37.0-ooCU9xvEdADlnefWVssgpwc1hcOBybt8QFXuMfsJZC0x",
+        },
     },
     .paths = .{
         "build.zig",

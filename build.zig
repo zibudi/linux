@@ -6,6 +6,7 @@ pub fn build(b: *std.Build) void {
     const source = b.dependency("linux_source", .{});
     const make = b.dependency("gnumake", .{ .target = host, .optimize = .ReleaseFast });
     const binutils = b.dependency("binutils", .{ .target = host, .optimize = .ReleaseFast });
+    const busybox = b.dependency("busybox", .{ .target = host, .optimize = .ReleaseSmall });
 
     const oid = tool(b, host, "oid");
 
@@ -20,8 +21,22 @@ pub fn build(b: *std.Build) void {
         &b.addInstallArtifact(oid, .{}).step,
     );
 
+    const link = b.addRunArtifact(tool(b, host, "applets"));
+    link.addArtifactArg(busybox.artifact("busybox"));
+    const applets = link.addOutputDirectoryArg("applets");
+
+    const tools = b.step("tools", "build every tool the kernel build runs");
+    for ([_]std.Build.LazyPath{ bin.getDirectory(), applets }) |directory| {
+        tools.dependOn(&b.addInstallDirectory(.{
+            .source_dir = directory,
+            .install_dir = .prefix,
+            .install_subdir = "tools",
+        }).step);
+    }
+
     const kernel = b.addRunArtifact(tool(b, host, "kernel"));
     kernel.addDirectoryArg(bin.getDirectory());
+    kernel.addDirectoryArg(applets);
     kernel.addDirectoryArg(source.path("."));
     kernel.addFileArg(b.path("config/x86_64.config"));
     const out = kernel.addOutputDirectoryArg("linux");

@@ -29,17 +29,38 @@ jobs:
           diff /tmp/perl.c /tmp/ours.c
           echo "identical, $(wc -l < /tmp/ours.c) lines"
 
-      - name: the only make and binutils are the ones we build
+      - name: gcc is the only thing here we did not build
         run: |
-          sudo rm -f /usr/bin/make
+          zig build tools
+          ours=$PWD/zig-out/tools
+          "$ours/busybox" --list | head -3
+
+          sudo rm -f /usr/bin/make /usr/bin/perl /usr/bin/getconf
           for tool in as ld ld.bfd ld.gold ar nm objcopy objdump readelf strip; do
             sudo rm -f /usr/bin/$tool \
                        /usr/bin/x86_64-linux-gnu-$tool \
                        /usr/x86_64-linux-gnu/bin/$tool
           done
-          sudo rm -f /usr/bin/perl /usr/bin/getconf
-          for tool in make as ld ar nm objcopy objdump readelf strip perl getconf; do
-            if command -v $tool; then echo "a $tool we did not build is still on PATH"; exit 1; fi
+          for tool in sed grep awk find xargs diff bc cat cp mv rm mkdir rmdir ln \
+                      touch basename dirname head tail wc tr cut uniq sort env uname \
+                      whoami mktemp readlink expr install sha1sum ls chmod sleep date \
+                      seq stat realpath cmp tee nl paste od yes nproc id du df sync tac; do
+            sudo rm -f /usr/bin/$tool /bin/$tool
+          done
+
+          # make hardcodes /bin/sh, and the kernel's tools/ sub-build wipes MAKEFLAGS,
+          # so a command-line SHELL= cannot reach it. Point /bin/sh at ours instead.
+          sudo ln -sf "$ours/sh" /bin/sh
+
+          echo "$ours" >> $GITHUB_PATH
+          export PATH="$ours:$PATH"
+          for tool in make as ld ar nm objcopy objdump readelf strip perl getconf sed grep awk sh; do
+            found=$(command -v $tool || true)
+            case "$found" in
+              "$ours"/*) ;;
+              "") if [ "$tool" != perl ] && [ "$tool" != getconf ]; then echo "$tool is missing"; exit 1; fi ;;
+              *) echo "$tool resolves to $found, which we did not build"; exit 1 ;;
+            esac
           done
           gcc --version | head -1
 

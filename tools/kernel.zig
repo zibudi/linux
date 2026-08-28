@@ -4,11 +4,12 @@ pub fn main(init: std.process.Init) !void {
     const io = init.io;
     const arena = init.arena.allocator();
     const argv = try init.minimal.args.toSlice(arena);
-    if (argv.len < 5) return error.Usage;
+    if (argv.len < 6) return error.Usage;
 
     const cwd = std.Io.Dir.cwd();
     const bin = try cwd.realPathFileAlloc(io, argv[1], arena);
-    const source, const fragment, const out = .{ argv[2], argv[3], argv[4] };
+    const applets = try cwd.realPathFileAlloc(io, argv[2], arena);
+    const source, const fragment, const out = .{ argv[3], argv[4], argv[5] };
 
     const tree = try std.fmt.allocPrint(arena, "{s}/build", .{out});
     try cwd.createDirPath(io, tree);
@@ -18,7 +19,7 @@ pub fn main(init: std.process.Init) !void {
     const jobs = try std.fmt.allocPrint(arena, "-j{d}", .{try std.Thread.getCpuCount()});
 
     const env = init.environ_map;
-    try env.put("PATH", try std.fmt.allocPrint(arena, "{s}:{s}", .{ bin, env.get("PATH") orelse "" }));
+    try env.put("PATH", try std.fmt.allocPrint(arena, "{s}:{s}:{s}", .{ bin, applets, env.get("PATH") orelse "" }));
 
     const make = [_][]const u8{
         try std.fmt.allocPrint(arena, "{s}/make", .{bin}),
@@ -28,10 +29,11 @@ pub fn main(init: std.process.Init) !void {
         try std.fmt.allocPrint(arena, "CC=gcc -B{s}/", .{bin}),
         try std.fmt.allocPrint(arena, "HOSTCC=gcc -B{s}/", .{bin}),
         try std.fmt.allocPrint(arena, "PERL={s}/oid", .{bin}),
+        try std.fmt.allocPrint(arena, "SHELL={s}/sh", .{applets}),
     };
 
     try run(io, arena, env, &make, &.{"defconfig"});
-    try run(io, arena, env, &.{"sh"}, &.{ merge, "-m", "-O", tree, config, fragment });
+    try run(io, arena, env, &.{try std.fmt.allocPrint(arena, "{s}/sh", .{applets})}, &.{ merge, "-m", "-O", tree, config, fragment });
     try run(io, arena, env, &make, &.{"olddefconfig"});
     try run(io, arena, env, &make, &.{ jobs, "bzImage", "modules" });
     try run(io, arena, env, &make, &.{ "INSTALL_MOD_PATH=dest", "INSTALL_MOD_STRIP=1", "modules_install" });
