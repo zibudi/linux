@@ -33,6 +33,11 @@ pub fn main(init: std.process.Init) !void {
     };
 
     try run(io, arena, env, &make, &.{"defconfig"});
+
+    // merge_config.sh reaches for readlink -m only when KCONFIG_CONFIG is unset,
+    // and we already know the path it would work out. kbuild reads the same
+    // variable afterwards and finds the same file, so it stays set.
+    try env.put("KCONFIG_CONFIG", try cwd.realPathFileAlloc(io, config, arena));
     try run(io, arena, env, &.{try std.fmt.allocPrint(arena, "{s}/sh", .{applets})}, &.{ merge, "-m", "-O", tree, config, fragment });
     try run(io, arena, env, &make, &.{"olddefconfig"});
     try run(io, arena, env, &make, &.{ jobs, "bzImage", "modules" });
