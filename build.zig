@@ -17,7 +17,9 @@ pub fn build(b: *std.Build) void {
 
     const bin = b.addWriteFiles();
     _ = bin.addCopyFile(make.artifact("make").getEmittedBin(), "make");
-    _ = bin.addCopyFile(oid.getEmittedBin(), "oid");
+    // lib/Makefile spells out perl rather than $(PERL), so the stand-in has to
+    // answer to that name. It refuses any script but build_OID_registry.
+    _ = bin.addCopyFile(oid.getEmittedBin(), "perl");
     for (@import("tools/binutils.zig").tools) |name| {
         _ = bin.addCopyFile(binutils.artifact(name).getEmittedBin(), name);
     }

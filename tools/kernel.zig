@@ -28,7 +28,7 @@ pub fn main(init: std.process.Init) !void {
         try std.fmt.allocPrint(arena, "O={s}", .{tree}),
         try std.fmt.allocPrint(arena, "CC=gcc -B{s}/", .{bin}),
         try std.fmt.allocPrint(arena, "HOSTCC=gcc -B{s}/", .{bin}),
-        try std.fmt.allocPrint(arena, "PERL={s}/oid", .{bin}),
+        try std.fmt.allocPrint(arena, "PERL={s}/perl", .{bin}),
         try std.fmt.allocPrint(arena, "SHELL={s}/sh", .{applets}),
         try std.fmt.allocPrint(arena, "LEX={s}/flex", .{bin}),
         try std.fmt.allocPrint(arena, "YACC={s}/byacc", .{bin}),
