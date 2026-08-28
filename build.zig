@@ -31,7 +31,17 @@ pub fn build(b: *std.Build) void {
         &b.addInstallArtifact(oid, .{}).step,
     );
 
-    const link = b.addRunArtifact(tool(b, host, "applets"));
+    // busybox dispatches on argv[0], and it is the one that knows which names it
+    // answers to. Copied and linked to relatively, so the directory relocates.
+    const link = b.addRunArtifact(busybox.artifact("busybox"));
+    link.addArgs(&.{
+        "sh",
+        "-c",
+        \\"$1" cp "$1" "$2/busybox"
+        \\for applet in $("$1" --list); do "$1" ln -sf busybox "$2/$applet"; done
+        ,
+        "--",
+    });
     link.addArtifactArg(busybox.artifact("busybox"));
     const applets = link.addOutputDirectoryArg("applets");
 
