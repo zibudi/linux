@@ -13,12 +13,12 @@
             .hash = "gnumake-4.4.1-mm24-wDGAAC8xSYBtk4_3H_-8xadiSAax8Rc0mviI7o3",
         },
         .binutils = .{
-            .url = "git+https://github.com/zibudi/binutils.git#dcd0e3e074d3ff4ca765eaaf14abf2dcf2f1da9f",
-            .hash = "binutils-2.45.0-SsZUiN52AwB3xpJJxytJFTGBFHNrK_OuZPR2ffDuidmg",
+            .url = "git+https://github.com/zibudi/binutils.git#68b19a9d46880ce0e13553cb7fc7c2498833a60e",
+            .hash = "binutils-2.45.0-SsZUiANxAwBgRaD9TWAB_jX1dXNtEA5y3tHCAKziwKv5",
         },
         .busybox = .{
-            .url = "git+https://github.com/zibudi/busybox.git#8d4e6a7927538da5ebbda5e8cc8ef0b2d84cf6b3",
-            .hash = "busybox-1.37.0-ooCU91lbngA0otOH6TR4CIUwEQH6trTOMF41WSURjXeO",
+            .url = "git+https://github.com/zibudi/busybox.git#8b0036bef8d1fcd0f74698d136d39bc041de730a",
+            .hash = "busybox-1.37.0-ooCU9xpYngDYuS2x2QBSDWVy-G0S7hVIvjKtISmbXCkk",
         },
         .flex = .{
             .url = "git+https://github.com/zibudi/flex.git#abf962cf59194b6b5cdf0994d064684c657333b5",

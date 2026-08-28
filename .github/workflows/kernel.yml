@@ -28,8 +28,11 @@ jobs:
           srctree=$src perl "$src/lib/build_OID_registry" "$src/include/linux/oid_registry.h" /tmp/theirs.c
           perl -e 'print "$^V\n"'
 
-      - name: gcc is the only thing here we did not build
+      - name: gcc and a shell are the only things here we did not build
         run: |
+          # The shell stays: busybox's build runs its own gen_build_files.sh to
+          # write applets.h, and binutils' runs genscripts.sh to write the linker
+          # scripts. Neither can use a busybox that is not built yet.
           zig build tools
           ours=$PWD/zig-out/tools
           # zig's install step does not carry symlinks over, so make busybox's
