@@ -48,8 +48,11 @@ jobs:
           for tool in as ld ld.bfd ld.gold ar nm objcopy objdump readelf strip; do
             victims="$victims /usr/bin/$tool /usr/bin/x86_64-linux-gnu-$tool /usr/x86_64-linux-gnu/bin/$tool"
           done
+          # /usr/bin/env stays: zig reads it as an ELF file to work out the native
+          # libc and its version. Delete it and zig decides the host is musl, then
+          # builds against glibc headers anyway. Ours still shadows it on PATH.
           for tool in sed grep awk find xargs diff bc cat cp mv rm mkdir rmdir ln \
-                      touch basename dirname head tail wc tr cut uniq sort env uname \
+                      touch basename dirname head tail wc tr cut uniq sort uname \
                       whoami mktemp readlink expr install sha1sum ls chmod sleep date \
                       seq stat realpath cmp tee nl paste od yes nproc id du df sync tac; do
             victims="$victims /usr/bin/$tool /bin/$tool"
