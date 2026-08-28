@@ -9,8 +9,8 @@
             .hash = "N-V-__8AACJ2L1iLbTjdHm7rRfLngUCvGJOWXx1Ph-EHabgs",
         },
         .gnumake = .{
-            .url = "git+https://github.com/zibudi/gnumake.git#dcd58ad7be296cf033c4724a8383891d786e69a9",
-            .hash = "gnumake-4.4.1-mm24-wDGAAC8xSYBtk4_3H_-8xadiSAax8Rc0mviI7o3",
+            .url = "git+https://github.com/zibudi/gnumake.git#9c93c82cb81ad70626e9e1801b81c798c944b07b",
+            .hash = "gnumake-4.4.1-mm24-37OAAC1IxKo4uvOKSS0Jl1rPZW2GXoaQIIvAoos",
         },
         .binutils = .{
             .url = "git+https://github.com/zibudi/binutils.git#68b19a9d46880ce0e13553cb7fc7c2498833a60e",
@@ -45,8 +45,8 @@
             .hash = "zlib-1.3.2-ZZQ7lc8NAAAHm9MDfplvwoesXvk4tVm6VCsiI8KnIbT0",
         },
         .perl = .{
-            .url = "git+https://github.com/zibudi/perl.git#54212877940592338ffcf35bdcab712a12d8d181",
-            .hash = "perl-5.40.2-poWY0PYWAADA-OfpOozgLbW02lUlmHyu2km3q_6sp0u7",
+            .url = "git+https://github.com/zibudi/perl.git#32ef642aa2bd09fab6c816830876fa6e0432cabe",
+            .hash = "perl-5.40.2-poWY0PYWAACS9IcRU6CiGyuDPJqguAoaaWUlDM5OeeFy",
         },
     },
     .paths = .{
