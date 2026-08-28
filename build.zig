@@ -7,11 +7,18 @@ pub fn build(b: *std.Build) void {
     const make = b.dependency("gnumake", .{ .target = host, .optimize = .ReleaseFast });
     const binutils = b.dependency("binutils", .{ .target = host, .optimize = .ReleaseFast });
 
+    const oid = tool(b, host, "oid");
+
     const bin = b.addWriteFiles();
     _ = bin.addCopyFile(make.artifact("make").getEmittedBin(), "make");
+    _ = bin.addCopyFile(oid.getEmittedBin(), "oid");
     for (@import("tools/binutils.zig").tools) |name| {
         _ = bin.addCopyFile(binutils.artifact(name).getEmittedBin(), name);
     }
+
+    b.step("oid", "build the OID registry generator on its own").dependOn(
+        &b.addInstallArtifact(oid, .{}).step,
+    );
 
     const kernel = b.addRunArtifact(tool(b, host, "kernel"));
     kernel.addDirectoryArg(bin.getDirectory());

@@ -19,6 +19,16 @@ jobs:
           version: 0.16.0
       - run: sudo apt-get update && sudo apt-get install -y bc bison flex kmod libelf-dev libssl-dev qemu-system-x86
 
+      - name: our OID generator matches the perl it replaces
+        run: |
+          zig build --fetch
+          zig build oid
+          src=$(ls -d zig-pkg/N-V-* | head -1)
+          srctree=$src perl "$src/lib/build_OID_registry" "$src/include/linux/oid_registry.h" /tmp/perl.c
+          srctree=$src ./zig-out/bin/oid "$src/lib/build_OID_registry" "$src/include/linux/oid_registry.h" /tmp/ours.c
+          diff /tmp/perl.c /tmp/ours.c
+          echo "identical, $(wc -l < /tmp/ours.c) lines"
+
       - name: the only make and binutils are the ones we build
         run: |
           sudo rm -f /usr/bin/make
@@ -27,7 +37,8 @@ jobs:
                        /usr/bin/x86_64-linux-gnu-$tool \
                        /usr/x86_64-linux-gnu/bin/$tool
           done
-          for tool in make as ld ar nm objcopy objdump readelf strip; do
+          sudo rm -f /usr/bin/perl /usr/bin/getconf
+          for tool in make as ld ar nm objcopy objdump readelf strip perl getconf; do
             if command -v $tool; then echo "a $tool we did not build is still on PATH"; exit 1; fi
           done
           gcc --version | head -1

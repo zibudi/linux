@@ -27,6 +27,7 @@ pub fn main(init: std.process.Init) !void {
         try std.fmt.allocPrint(arena, "O={s}", .{tree}),
         try std.fmt.allocPrint(arena, "CC=gcc -B{s}/", .{bin}),
         try std.fmt.allocPrint(arena, "HOSTCC=gcc -B{s}/", .{bin}),
+        try std.fmt.allocPrint(arena, "PERL={s}/oid", .{bin}),
     };
 
     try run(io, arena, env, &make, &.{"defconfig"});
