@@ -21,13 +21,18 @@ pub fn main(init: std.process.Init) !void {
     if (argv.len != 3) return error.Usage;
 
     const cwd = std.Io.Dir.cwd();
-    const busybox = try cwd.realPathFileAlloc(io, argv[1], arena);
     const out = argv[2];
     try cwd.createDirPath(io, out);
+
+    // Copied rather than referenced, and linked to by a relative name, so the
+    // directory can be installed somewhere else and still work.
+    const binary = try std.fmt.allocPrint(arena, "{s}/busybox", .{out});
+    cwd.deleteFile(io, binary) catch {};
+    try cwd.copyFile(argv[1], cwd, binary, io, .{});
 
     for (names) |name| {
         const path = try std.fmt.allocPrint(arena, "{s}/{s}", .{ out, name });
         cwd.deleteFile(io, path) catch {};
-        try cwd.symLink(io, busybox, path, .{});
+        try cwd.symLink(io, "busybox", path, .{});
     }
 }

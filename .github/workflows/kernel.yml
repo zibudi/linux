@@ -34,24 +34,24 @@ jobs:
         run: |
           zig build tools
           ours=$PWD/zig-out/tools
-          "$ours/busybox" --list | head -3
+          echo "busybox provides $("$ours/busybox" --list | wc -l) applets"
 
-          sudo rm -f /usr/bin/make /usr/bin/perl /usr/bin/getconf
+          # make hardcodes /bin/sh, and the kernel's tools/ sub-build wipes MAKEFLAGS,
+          # so a command-line SHELL= cannot reach it. Point /bin/sh at ours instead.
+          sudo ln -sf "$ours/sh" /bin/sh
+
+          # Collected first and deleted in one call, because the list includes rm.
+          victims="/usr/bin/make /usr/bin/perl /usr/bin/getconf"
           for tool in as ld ld.bfd ld.gold ar nm objcopy objdump readelf strip; do
-            sudo rm -f /usr/bin/$tool \
-                       /usr/bin/x86_64-linux-gnu-$tool \
-                       /usr/x86_64-linux-gnu/bin/$tool
+            victims="$victims /usr/bin/$tool /usr/bin/x86_64-linux-gnu-$tool /usr/x86_64-linux-gnu/bin/$tool"
           done
           for tool in sed grep awk find xargs diff bc cat cp mv rm mkdir rmdir ln \
                       touch basename dirname head tail wc tr cut uniq sort env uname \
                       whoami mktemp readlink expr install sha1sum ls chmod sleep date \
                       seq stat realpath cmp tee nl paste od yes nproc id du df sync tac; do
-            sudo rm -f /usr/bin/$tool /bin/$tool
+            victims="$victims /usr/bin/$tool /bin/$tool"
           done
-
-          # make hardcodes /bin/sh, and the kernel's tools/ sub-build wipes MAKEFLAGS,
-          # so a command-line SHELL= cannot reach it. Point /bin/sh at ours instead.
-          sudo ln -sf "$ours/sh" /bin/sh
+          sudo rm -f $victims
 
           echo "$ours" >> $GITHUB_PATH
           export PATH="$ours:$PATH"
