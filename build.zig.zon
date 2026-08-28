@@ -17,8 +17,8 @@
             .hash = "binutils-2.45.0-SsZUiN52AwB3xpJJxytJFTGBFHNrK_OuZPR2ffDuidmg",
         },
         .busybox = .{
-            .url = "git+https://github.com/zibudi/busybox.git#ec45d8fc1cab11c0ab0333f64de554b8167c5f89",
-            .hash = "busybox-1.37.0-ooCU9y_EdADYSKbAJE3iakxK7xkjKwfk2xPT1kURCdnz",
+            .url = "git+https://github.com/zibudi/busybox.git#ae2d67b535d10fe75ec7a616d5148360f0705262",
+            .hash = "busybox-1.37.0-ooCU95MhgAC0HzNO3nJ70B8n5IyWalDcbHieciKuxenI",
         },
         .flex = .{
             .url = "git+https://github.com/zibudi/flex.git#abf962cf59194b6b5cdf0994d064684c657333b5",
