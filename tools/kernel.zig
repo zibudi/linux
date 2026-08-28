@@ -17,29 +17,23 @@ pub fn main(init: std.process.Init) !void {
     const config = try std.fmt.allocPrint(arena, "{s}/.config", .{tree});
     const jobs = try std.fmt.allocPrint(arena, "-j{d}", .{try std.Thread.getCpuCount()});
 
-    var make: std.ArrayList([]const u8) = .empty;
-    try make.appendSlice(arena, &.{
+    const env = init.environ_map;
+    try env.put("PATH", try std.fmt.allocPrint(arena, "{s}:{s}", .{ bin, env.get("PATH") orelse "" }));
+
+    const make = [_][]const u8{
         try std.fmt.allocPrint(arena, "{s}/make", .{bin}),
         "-C",
         source,
         try std.fmt.allocPrint(arena, "O={s}", .{tree}),
         try std.fmt.allocPrint(arena, "CC=gcc -B{s}/", .{bin}),
         try std.fmt.allocPrint(arena, "HOSTCC=gcc -B{s}/", .{bin}),
-    });
-    for (@import("binutils.zig").tools) |name| {
-        const upper = try arena.alloc(u8, name.len);
-        try make.append(arena, try std.fmt.allocPrint(arena, "{s}={s}/{s}", .{
-            std.ascii.upperString(upper, name),
-            bin,
-            name,
-        }));
-    }
+    };
 
-    try run(io, arena, make.items, &.{"defconfig"});
+    try run(io, arena, &make, &.{"defconfig"});
     try run(io, arena, &.{"sh"}, &.{ merge, "-m", "-O", tree, config, fragment });
-    try run(io, arena, make.items, &.{"olddefconfig"});
-    try run(io, arena, make.items, &.{ jobs, "bzImage", "modules" });
-    try run(io, arena, make.items, &.{ "INSTALL_MOD_PATH=dest", "INSTALL_MOD_STRIP=1", "modules_install" });
+    try run(io, arena, &make, &.{"olddefconfig"});
+    try run(io, arena, &make, &.{ jobs, "bzImage", "modules" });
+    try run(io, arena, &make, &.{ "INSTALL_MOD_PATH=dest", "INSTALL_MOD_STRIP=1", "modules_install" });
 
     try move(io, arena, tree, "arch/x86/boot/bzImage", out, "vmlinuz");
     try move(io, arena, tree, ".config", out, "config");

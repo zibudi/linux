@@ -13,8 +13,8 @@
             .hash = "gnumake-4.4.1-mm24-wDGAAC8xSYBtk4_3H_-8xadiSAax8Rc0mviI7o3",
         },
         .binutils = .{
-            .url = "git+https://github.com/zibudi/binutils.git#7f5ecd3c78e061ca1f02bc2eff0e2c7f064840d5",
-            .hash = "binutils-2.45.0-SsZUiN9TAwAr2b1sJQN0fS08gyvcNR7fjVntda1HXO-t",
+            .url = "git+https://github.com/zibudi/binutils.git#08a86fde55bbb75dd32bf635e78902fbf4a7b775",
+            .hash = "binutils-2.45.0-SsZUiChwAwAwtzDK1R-EgIteniJxVuZrQLKLT_NwUxJN",
         },
     },
     .paths = .{

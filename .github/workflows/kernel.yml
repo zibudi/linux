@@ -22,16 +22,15 @@ jobs:
       - name: the only make and binutils are the ones we build
         run: |
           sudo rm -f /usr/bin/make
-          for tool in as ar nm objcopy objdump readelf strip; do
+          for tool in as ld ld.bfd ld.gold ar nm objcopy objdump readelf strip; do
             sudo rm -f /usr/bin/$tool \
                        /usr/bin/x86_64-linux-gnu-$tool \
                        /usr/x86_64-linux-gnu/bin/$tool
           done
-          for tool in make as ar nm objcopy objdump readelf strip; do
+          for tool in make as ld ar nm objcopy objdump readelf strip; do
             if command -v $tool; then echo "a $tool we did not build is still on PATH"; exit 1; fi
           done
           gcc --version | head -1
-          ld --version | head -1
 
       - run: zig build
 
@@ -67,6 +66,6 @@ jobs:
             -smp 4 -m 1024 -append 'console=ttyS0 panic=-1' > boot.log 2>&1 || true
           tail -30 boot.log
           grep -q 'Linux version 6.12.103' boot.log
-          grep -q 'GNU ld' boot.log
+          grep -q 'GNU ld (GNU Binutils) 2.45.0' boot.log
           grep -q 'Brought up 1 node, 4 CPUs' boot.log
           grep -q 'Kernel panic' boot.log
