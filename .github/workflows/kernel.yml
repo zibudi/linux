@@ -23,7 +23,8 @@ jobs:
         run: |
           zig build --fetch
           zig build oid
-          src=$(ls -d zig-pkg/N-V-* | head -1)
+          script=$(ls zig-pkg/*/lib/build_OID_registry | head -1)
+          src=${script%/lib/build_OID_registry}
           srctree=$src perl "$src/lib/build_OID_registry" "$src/include/linux/oid_registry.h" /tmp/perl.c
           srctree=$src ./zig-out/bin/oid "$src/lib/build_OID_registry" "$src/include/linux/oid_registry.h" /tmp/ours.c
           diff /tmp/perl.c /tmp/ours.c
