@@ -29,11 +29,11 @@ pub fn main(init: std.process.Init) !void {
         try std.fmt.allocPrint(arena, "HOSTCC=gcc -B{s}/", .{bin}),
     };
 
-    try run(io, arena, &make, &.{"defconfig"});
-    try run(io, arena, &.{"sh"}, &.{ merge, "-m", "-O", tree, config, fragment });
-    try run(io, arena, &make, &.{"olddefconfig"});
-    try run(io, arena, &make, &.{ jobs, "bzImage", "modules" });
-    try run(io, arena, &make, &.{ "INSTALL_MOD_PATH=dest", "INSTALL_MOD_STRIP=1", "modules_install" });
+    try run(io, arena, env, &make, &.{"defconfig"});
+    try run(io, arena, env, &.{"sh"}, &.{ merge, "-m", "-O", tree, config, fragment });
+    try run(io, arena, env, &make, &.{"olddefconfig"});
+    try run(io, arena, env, &make, &.{ jobs, "bzImage", "modules" });
+    try run(io, arena, env, &make, &.{ "INSTALL_MOD_PATH=dest", "INSTALL_MOD_STRIP=1", "modules_install" });
 
     try move(io, arena, tree, "arch/x86/boot/bzImage", out, "vmlinuz");
     try move(io, arena, tree, ".config", out, "config");
@@ -44,9 +44,15 @@ pub fn main(init: std.process.Init) !void {
     try cwd.deleteTree(io, tree);
 }
 
-fn run(io: std.Io, arena: std.mem.Allocator, command: []const []const u8, args: []const []const u8) !void {
+fn run(
+    io: std.Io,
+    arena: std.mem.Allocator,
+    env: *const std.process.Environ.Map,
+    command: []const []const u8,
+    args: []const []const u8,
+) !void {
     const argv = try std.mem.concat(arena, []const u8, &.{ command, args });
-    var child = try std.process.spawn(io, .{ .argv = argv });
+    var child = try std.process.spawn(io, .{ .argv = argv, .environ_map = env });
     switch (try child.wait(io)) {
         .exited => |code| if (code != 0) return error.MakeFailed,
         else => return error.MakeFailed,
