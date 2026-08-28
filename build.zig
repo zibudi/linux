@@ -7,6 +7,11 @@ pub fn build(b: *std.Build) void {
     const make = b.dependency("gnumake", .{ .target = host, .optimize = .ReleaseFast });
     const binutils = b.dependency("binutils", .{ .target = host, .optimize = .ReleaseFast });
     const busybox = b.dependency("busybox", .{ .target = host, .optimize = .ReleaseSmall });
+    const generators = [_]struct { []const u8, *std.Build.Dependency }{
+        .{ "flex", b.dependency("flex", .{ .target = host, .optimize = .ReleaseFast }) },
+        .{ "byacc", b.dependency("byacc", .{ .target = host, .optimize = .ReleaseFast }) },
+        .{ "m4", b.dependency("m4", .{ .target = host, .optimize = .ReleaseFast }) },
+    };
 
     const oid = tool(b, host, "oid");
 
@@ -15,6 +20,9 @@ pub fn build(b: *std.Build) void {
     _ = bin.addCopyFile(oid.getEmittedBin(), "oid");
     for (@import("tools/binutils.zig").tools) |name| {
         _ = bin.addCopyFile(binutils.artifact(name).getEmittedBin(), name);
+    }
+    for (generators) |generator| {
+        _ = bin.addCopyFile(generator[1].artifact(generator[0]).getEmittedBin(), generator[0]);
     }
 
     b.step("oid", "build the OID registry generator on its own").dependOn(

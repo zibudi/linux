@@ -20,6 +20,18 @@
             .url = "git+https://github.com/zibudi/busybox.git#19579272ee796974a3f52e06070e7f2d81072d96",
             .hash = "busybox-1.37.0-ooCU9xvEdADlnefWVssgpwc1hcOBybt8QFXuMfsJZC0x",
         },
+        .flex = .{
+            .url = "git+https://github.com/zibudi/flex.git#abf962cf59194b6b5cdf0994d064684c657333b5",
+            .hash = "flex-2.6.4-aOcAuWUNAAB-_m10yFOYBH8l3bzlLHr_P5krLGuYMD_O",
+        },
+        .byacc = .{
+            .url = "git+https://github.com/zibudi/byacc.git#c96639f73d04e3605b1ee965433256600187313a",
+            .hash = "byacc-2.0.20241231-XpQLb8IMAADU3CPy0J_kxb7At3sW5bD0PGL0-ss-zMCw",
+        },
+        .m4 = .{
+            .url = "git+https://github.com/zibudi/m4.git#696845bf7d679b118640b5d0623f1bf264e41d49",
+            .hash = "m4-1.4.0-vx36M3dgAwCPnZvDYWChsq1GIls4mos8dcp6mgOF3U8x",
+        },
     },
     .paths = .{
         "build.zig",

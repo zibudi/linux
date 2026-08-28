@@ -17,7 +17,7 @@ jobs:
       - uses: mlugg/setup-zig@d1434d08867e3ee9daa34448df10607b98908d29
         with:
           version: 0.16.0
-      - run: sudo apt-get update && sudo apt-get install -y bc bison flex kmod libelf-dev libssl-dev qemu-system-x86
+      - run: sudo apt-get update && sudo apt-get install -y kmod libelf-dev libssl-dev qemu-system-x86
 
       - name: our OID generator matches the perl it replaces
         run: |
@@ -45,6 +45,7 @@ jobs:
 
           # Collected first and deleted in one call, because the list includes rm.
           victims="/usr/bin/make /usr/bin/perl /usr/bin/getconf"
+          victims="$victims /usr/bin/bison /usr/bin/flex /usr/bin/m4 /usr/bin/byacc /usr/bin/lex /usr/bin/yacc"
           for tool in as ld ld.bfd ld.gold ar nm objcopy objdump readelf strip; do
             victims="$victims /usr/bin/$tool /usr/bin/x86_64-linux-gnu-$tool /usr/x86_64-linux-gnu/bin/$tool"
           done
@@ -61,11 +62,12 @@ jobs:
 
           echo "$ours" >> $GITHUB_PATH
           export PATH="$ours:$PATH"
-          for tool in make as ld ar nm objcopy objdump readelf strip perl getconf sed grep awk sh; do
+          for tool in make as ld ar nm objcopy objdump readelf strip perl getconf \
+                      sed grep awk sh flex byacc m4 bc bison; do
             found=$(command -v $tool || true)
             case "$found" in
               "$ours"/*) ;;
-              "") if [ "$tool" != perl ] && [ "$tool" != getconf ]; then echo "$tool is missing"; exit 1; fi ;;
+              "") case "$tool" in perl|getconf|bison) ;; *) echo "$tool is missing"; exit 1 ;; esac ;;
               *) echo "$tool resolves to $found, which we did not build"; exit 1 ;;
             esac
           done
