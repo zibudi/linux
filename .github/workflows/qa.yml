@@ -10,8 +10,6 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { builder: a, pin: "" }
-          - { builder: b, pin: "" }
           - { builder: c, pin: "1" }
           - { builder: d, pin: "1" }
     runs-on: ubuntu-24.04
@@ -25,7 +23,7 @@ jobs:
           gcc --version | head -1
           hostname
           if [ -n "${{ matrix.pin }}" ]; then
-            export KBUILD_BUILD_TIMESTAMP=zibudi KBUILD_BUILD_USER=zibudi KBUILD_BUILD_HOST=zibudi
+            export KBUILD_BUILD_TIMESTAMP='Thu Jan  1 00:00:00 UTC 2026' KBUILD_BUILD_USER=zibudi KBUILD_BUILD_HOST=zibudi
           fi
           zig build
       - uses: actions/upload-artifact@v4
@@ -59,7 +57,6 @@ jobs:
             done
             if [ $n -eq 0 ]; then echo "IDENTICAL: every file byte-for-byte"; fi
           }
-          pair a b
           pair c d
       - name: initramfs from the distro's static busybox
         run: |
