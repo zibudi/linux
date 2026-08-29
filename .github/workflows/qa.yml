@@ -45,16 +45,19 @@ jobs:
         run: |
           pair() {
             echo "== $1 vs $2 =="
-            diff <(cd build-$1 && find . -type f | sort) <(cd build-$2 && find . -type f | sort) \
-              && echo "same file set" || echo "FILE SETS DIFFER"
+            if diff <(cd build-$1 && find . -type f | sort) <(cd build-$2 && find . -type f | sort); then
+              echo "same file set"
+            else
+              echo "FILE SETS DIFFER"
+            fi
             n=0
             for f in $(cd build-$1 && find . -type f | sort); do
               if ! cmp -s "build-$1/$f" "build-$2/$f"; then
-                echo "DIFFERS $f ($(cmp -l "build-$1/$f" "build-$2/$f" 2>/dev/null | wc -l) bytes)"
+                echo "DIFFERS $f ($(cmp -l "build-$1/$f" "build-$2/$f" 2>/dev/null | wc -l) positions, first: $(cmp "build-$1/$f" "build-$2/$f" | head -1))"
                 n=$((n+1))
               fi
             done
-            [ $n -eq 0 ] && echo "IDENTICAL: every file byte-for-byte"
+            if [ $n -eq 0 ]; then echo "IDENTICAL: every file byte-for-byte"; fi
           }
           pair a b
           pair c d
