@@ -1,0 +1,102 @@
+name: qa-recon
+
+on:
+  push:
+    branches: [qa-recon]
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { builder: a, pin: "" }
+          - { builder: b, pin: "" }
+          - { builder: c, pin: "1" }
+          - { builder: d, pin: "1" }
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09
+      - uses: mlugg/setup-zig@d1434d08867e3ee9daa34448df10607b98908d29
+        with:
+          version: 0.16.0
+      - name: build (pinned banner when told)
+        run: |
+          gcc --version | head -1
+          hostname
+          if [ -n "${{ matrix.pin }}" ]; then
+            export KBUILD_BUILD_TIMESTAMP=zibudi KBUILD_BUILD_USER=zibudi KBUILD_BUILD_HOST=zibudi
+          fi
+          zig build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: build-${{ matrix.builder }}
+          path: zig-out
+
+  compare-and-boot:
+    needs: build
+    runs-on: ubuntu-24.04
+    steps:
+      - run: sudo apt-get update && sudo apt-get install -y qemu-system-x86 busybox-static cpio
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: build-*
+      - name: are two builds the same build
+        run: |
+          pair() {
+            echo "== $1 vs $2 =="
+            diff <(cd build-$1 && find . -type f | sort) <(cd build-$2 && find . -type f | sort) \
+              && echo "same file set" || echo "FILE SETS DIFFER"
+            n=0
+            for f in $(cd build-$1 && find . -type f | sort); do
+              if ! cmp -s "build-$1/$f" "build-$2/$f"; then
+                echo "DIFFERS $f ($(cmp -l "build-$1/$f" "build-$2/$f" 2>/dev/null | wc -l) bytes)"
+                n=$((n+1))
+              fi
+            done
+            [ $n -eq 0 ] && echo "IDENTICAL: every file byte-for-byte"
+          }
+          pair a b
+          pair c d
+      - name: initramfs from the distro's static busybox
+        run: |
+          mkdir -p rootfs/bin rootfs/proc rootfs/sys rootfs/dev rootfs/lib/modules/6.12.103
+          cp /bin/busybox rootfs/bin/busybox
+          cp -r build-c/modules/. rootfs/lib/modules/6.12.103/
+          sudo mknod rootfs/dev/console c 5 1 || true
+          cat > rootfs/init <<'EOF'
+          #!/bin/busybox sh
+          busybox mount -t devtmpfs dev /dev 2>/dev/null
+          exec > /dev/console 2>&1
+          busybox mount -t proc proc /proc
+          busybox mount -t sysfs sys /sys
+          echo "taint before: $(busybox cat /proc/sys/kernel/tainted)"
+          for ko in $(busybox find /lib/modules -name '*.ko' | busybox sort); do
+            m=$(busybox basename "$ko" .ko)
+            if busybox modprobe "$m" 2>&1; then echo "LOADED $m"; else echo "FAILED $m"; fi
+          done
+          echo "taint after: $(busybox cat /proc/sys/kernel/tainted)"
+          echo "in /proc/modules: $(busybox wc -l < /proc/modules)"
+          echo QA-RECON-DONE
+          busybox poweroff -f
+          EOF
+          chmod 755 rootfs/init
+          (cd rootfs && find . | cpio -o -H newc) > initramfs.cpio
+      - name: boot loud
+        run: |
+          timeout 240 qemu-system-x86_64 -kernel build-c/vmlinuz -initrd initramfs.cpio -nographic -no-reboot \
+            -smp 4 -m 2048 -append 'console=ttyS0 rdinit=/init panic=-1' > boot.log 2>&1 || true
+          echo "== outcome =="
+          grep -E "QA-RECON-DONE|Kernel panic" boot.log || echo "neither marker: init never spoke"
+          echo "== modules =="
+          grep -cE "^LOADED " boot.log || true
+          grep -E "^FAILED " boot.log || echo "no failures"
+          echo "== taint =="
+          grep -E "^taint|^in /proc/modules" boot.log || true
+          echo "== everything the kernel grumbled =="
+          grep -nE "BUG:|WARNING:|Oops|Call Trace|UBSAN:|KASAN|corrupt" boot.log || echo "(nothing)"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: boot-log
+          path: boot.log
