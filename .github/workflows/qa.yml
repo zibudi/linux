@@ -23,7 +23,7 @@ jobs:
           gcc --version | head -1
           hostname
           if [ -n "${{ matrix.pin }}" ]; then
-            export KBUILD_BUILD_TIMESTAMP='Thu Jan  1 00:00:00 UTC 2026' KBUILD_BUILD_USER=zibudi KBUILD_BUILD_HOST=zibudi
+            export KBUILD_BUILD_TIMESTAMP='2026-01-01 00:00:00' KBUILD_BUILD_USER=zibudi KBUILD_BUILD_HOST=zibudi
             export SOURCE_DATE_EPOCH=1767225600
           fi
           zig build
