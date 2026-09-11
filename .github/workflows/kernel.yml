@@ -115,9 +115,11 @@ jobs:
       - name: it boots
         run: |
           timeout 180 qemu-system-x86_64 -kernel zig-out/vmlinuz -nographic -no-reboot \
-            -smp 4 -m 1024 -append 'console=ttyS0 panic=-1' > boot.log 2>&1 || true
+            -smp 4 -m 1024 -device virtio-gpu-pci \
+            -append 'console=ttyS0 panic=-1' > boot.log 2>&1 || true
           tail -30 boot.log
           grep -q 'Linux version 6.12.103' boot.log
           grep -q 'GNU ld (GNU Binutils) 2.45.0' boot.log
           grep -q 'Brought up 1 node, 4 CPUs' boot.log
+          grep -q 'Console: switching to colour frame buffer device' boot.log
           grep -q 'Kernel panic' boot.log
